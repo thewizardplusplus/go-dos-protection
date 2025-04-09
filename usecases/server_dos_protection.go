@@ -8,6 +8,7 @@ import (
 	"io"
 	"time"
 
+	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
@@ -120,4 +121,121 @@ func (usecase ServerDoSProtectionUsecase) GenerateChallenge(
 	}
 
 	return challenge, nil
+}
+
+func (usecase ServerDoSProtectionUsecase) VerifySolution(
+	ctx context.Context,
+	params dosProtectionUsecaseModels.VerifySolutionParams,
+) (pow.Solution, error) {
+	leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(
+		params.LeadingZeroBitCount,
+	)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf(
+			"unable to construct the leading zero bit count: %w",
+			err,
+		)
+	}
+
+	createdAt, err := powValueTypes.ParseCreatedAt(params.CreatedAt)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf(
+			"unable to parse the `CreatedAt` timestamp: %w",
+			err,
+		)
+	}
+
+	ttl, err := powValueTypes.ParseTTL(params.TTL)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to parse the TTL: %w", err)
+	}
+
+	expectedResource, err := usecase.options.ResourceProvider.ProvideResource(ctx)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf(
+			"unable to get the expected resource: %w",
+			err,
+		)
+	}
+
+	resource, err := powValueTypes.ParseResource(params.Resource)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to parse the resource: %w", err)
+	}
+	if resource.ToString() != expectedResource.ToString() {
+		return pow.Solution{}, errors.Join(
+			errors.New("resource doesn't match the expected one"),
+			powErrors.ErrValidationFailure,
+		)
+	}
+
+	hash, err := usecase.options.HashProvider.ProvideHashByName(
+		ctx,
+		params.HashName,
+	)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf(
+			"unable to get the hash by name %s: %w",
+			params.HashName,
+			err,
+		)
+	}
+
+	hashDataLayout, err := powValueTypes.ParseHashDataLayout(params.HashDataLayout)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf(
+			"unable to parse the hash data layout: %w",
+			err,
+		)
+	}
+
+	challenge, err := pow.NewChallengeBuilder().
+		SetLeadingZeroBitCount(leadingZeroBitCount).
+		SetCreatedAt(createdAt).
+		SetTTL(ttl).
+		SetResource(resource).
+		SetSerializedPayload(
+			powValueTypes.NewSerializedPayload(params.Payload),
+		).
+		SetHash(hash).
+		SetHashDataLayout(hashDataLayout).
+		Build()
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to build the challenge: %w", err)
+	}
+	if !challenge.IsAlive() {
+		return pow.Solution{}, errors.Join(
+			errors.New("challenge is outdated"),
+			powErrors.ErrValidationFailure,
+		)
+	}
+
+	nonce, err := powValueTypes.ParseNonce(params.Nonce)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to parse the nonce: %w", err)
+	}
+
+	solutionBuilder := pow.NewSolutionBuilder().
+		SetChallenge(challenge).
+		SetNonce(nonce)
+
+	if serializedHashSum, isPresent := params.HashSum.Get(); isPresent {
+		rawHashSum, err := hex.DecodeString(serializedHashSum)
+		if err != nil {
+			return pow.Solution{}, fmt.Errorf("unable to parse the hash sum: %w", err)
+		}
+
+		solutionBuilder.SetHashSum(powValueTypes.NewHashSum(rawHashSum))
+	}
+
+	solution, err := solutionBuilder.Build()
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to build the solution: %w", err)
+	}
+
+	if err := solution.Verify(); err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to verify the solution: %w", err)
+	}
+
+	return solution, nil
 }
