@@ -1,0 +1,11 @@
+linters:
+  enable:
+    - lll
+linters-settings:
+  lll:
+    line-length: 80
+issues:
+  exclude-rules:
+    - linters:
+        - lll
+      source: "^//go:generate "
