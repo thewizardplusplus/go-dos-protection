@@ -163,6 +163,32 @@ func (usecase ServerDoSProtectionUsecase) GenerateChallenge(
 	return challenge, nil
 }
 
+func (usecase ServerDoSProtectionUsecase) GenerateSignedChallenge(
+	ctx context.Context,
+) (dosProtectionUsecaseModels.SignedChallenge, error) {
+	challenge, err := usecase.GenerateChallenge(ctx)
+	if err != nil {
+		return dosProtectionUsecaseModels.SignedChallenge{}, fmt.Errorf(
+			"unable to generate the challenge: %w",
+			err,
+		)
+	}
+
+	signature, err := usecase.SignChallenge(ctx, challenge)
+	if err != nil {
+		return dosProtectionUsecaseModels.SignedChallenge{}, fmt.Errorf(
+			"unable to sign the challenge: %w",
+			err,
+		)
+	}
+
+	signedChallenge := dosProtectionUsecaseModels.SignedChallenge{
+		Challenge:                 challenge,
+		MessageAuthenticationCode: hex.EncodeToString(signature.ToBytes()),
+	}
+	return signedChallenge, nil
+}
+
 func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	ctx context.Context,
 	params dosProtectionUsecaseModels.VerifySolutionParams,
