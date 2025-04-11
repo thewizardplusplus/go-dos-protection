@@ -35,3 +35,9 @@ type VerifySolutionParams struct {
 	Nonce               string
 	HashSum             mo.Option[string]
 }
+
+type VerifySolutionAndChallengeSignatureParams struct {
+	VerifySolutionParams
+
+	MessageAuthenticationCode string
+}
