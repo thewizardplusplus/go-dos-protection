@@ -1,6 +1,7 @@
 package dosProtectionUsecases
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"errors"
@@ -301,6 +302,34 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 
 	if err := solution.Verify(); err != nil {
 		return pow.Solution{}, fmt.Errorf("unable to verify the solution: %w", err)
+	}
+
+	return solution, nil
+}
+
+func (usecase ServerDoSProtectionUsecase) VerifySolutionAndChallengeSignature(
+	ctx context.Context,
+	params dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams,
+) (pow.Solution, error) {
+	solution, err := usecase.VerifySolution(ctx, params.VerifySolutionParams)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to verify the solution: %w", err)
+	}
+
+	expectedSignature, err := usecase.SignChallenge(ctx, solution.Challenge())
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to sign the challenge: %w", err)
+	}
+
+	signature, err := hex.DecodeString(params.MessageAuthenticationCode)
+	if err != nil {
+		return pow.Solution{}, fmt.Errorf("unable to parse the signature: %w", err)
+	}
+	if !bytes.Equal(signature, expectedSignature.ToBytes()) {
+		return pow.Solution{}, errors.Join(
+			errors.New("signature doesn't match the expected one"),
+			powErrors.ErrValidationFailure,
+		)
 	}
 
 	return solution, nil

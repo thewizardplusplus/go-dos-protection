@@ -30,6 +30,11 @@ type VerifySolutionParams struct {
 	HashSum             mo.Option[string]
 }
 
+type VerifySolutionAndChallengeSignatureParams struct {
+	VerifySolutionParams      VerifySolutionParams
+	MessageAuthenticationCode string
+}
+
 type SignedChallenge struct {
 	Challenge                 pow.Challenge
 	MessageAuthenticationCode string
