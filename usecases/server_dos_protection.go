@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
+	"strings"
 	"time"
 
 	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
@@ -33,6 +35,8 @@ type ServerDoSProtectionUsecaseOptions struct {
 	PayloadSize                 int
 	HashProvider                HashProvider
 	GenerationHashName          string
+	SecretKey                   string
+	SigningHashName             string
 }
 
 type ServerDoSProtectionUsecase struct {
@@ -45,6 +49,42 @@ func NewServerDoSProtectionUsecase(
 	return ServerDoSProtectionUsecase{
 		options: options,
 	}
+}
+
+func (usecase ServerDoSProtectionUsecase) SignChallenge(
+	ctx context.Context,
+	challenge pow.Challenge,
+) (powValueTypes.HashSum, error) {
+	signatureDataParts := []string{
+		strconv.Itoa(challenge.LeadingZeroBitCount().ToInt()),
+		challenge.SerializedPayload().ToString(),
+		challenge.Hash().Name(),
+		challenge.HashDataLayout().ToString(),
+		usecase.options.SecretKey,
+	}
+	if createdAt, isPresent := challenge.CreatedAt().Get(); isPresent {
+		signatureDataParts = append(signatureDataParts, createdAt.ToString())
+	}
+	if ttl, isPresent := challenge.TTL().Get(); isPresent {
+		signatureDataParts = append(signatureDataParts, ttl.ToString())
+	}
+	if resource, isPresent := challenge.Resource().Get(); isPresent {
+		signatureDataParts = append(signatureDataParts, resource.ToString())
+	}
+
+	hash, err := usecase.options.HashProvider.ProvideHashByName(
+		ctx,
+		usecase.options.SigningHashName,
+	)
+	if err != nil {
+		return powValueTypes.HashSum{}, fmt.Errorf(
+			"unable to get the hash by name %s: %w",
+			usecase.options.SigningHashName,
+			err,
+		)
+	}
+
+	return hash.ApplyTo(strings.Join(signatureDataParts, "")), nil
 }
 
 func (usecase ServerDoSProtectionUsecase) GenerateChallenge(
