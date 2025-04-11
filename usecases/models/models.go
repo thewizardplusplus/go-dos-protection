@@ -2,6 +2,7 @@ package dosProtectionUsecaseModels
 
 import (
 	"github.com/samber/mo"
+	pow "github.com/thewizardplusplus/go-pow"
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
 )
 
@@ -15,6 +16,12 @@ type SolveChallengeParams struct {
 	HashDataLayout           string
 	MaxAttemptCount          mo.Option[int]
 	RandomInitialNonceParams mo.Option[powValueTypes.RandomNonceParams]
+}
+
+type SignedChallenge struct {
+	pow.Challenge
+
+	MessageAuthenticationCode string
 }
 
 type VerifySolutionParams struct {
