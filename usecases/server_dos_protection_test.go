@@ -3,6 +3,7 @@ package dosProtectionUsecases
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/sha512"
 	"math/big"
 	"net/url"
 	"strings"
@@ -51,6 +52,8 @@ func TestNewServerDoSProtectionUsecase(test *testing.T) {
 						PayloadSize:                 5,
 						HashProvider:                hashProviderMock,
 						GenerationHashName:          "SHA-256",
+						SecretKey:                   "secret-key",
+						SigningHashName:             "SHA-512",
 					}
 				},
 			},
@@ -73,6 +76,8 @@ func TestNewServerDoSProtectionUsecase(test *testing.T) {
 						PayloadSize:                 5,
 						HashProvider:                hashProviderMock,
 						GenerationHashName:          "SHA-256",
+						SecretKey:                   "secret-key",
+						SigningHashName:             "SHA-512",
 					},
 				}
 			},
@@ -82,6 +87,188 @@ func TestNewServerDoSProtectionUsecase(test *testing.T) {
 			got := NewServerDoSProtectionUsecase(data.args.options(test))
 
 			assert.Equal(test, data.want(test), got)
+		})
+	}
+}
+
+func TestServerDoSProtectionUsecase_SignChallenge(test *testing.T) {
+	type fields struct {
+		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
+	}
+	type args struct {
+		ctx       context.Context
+		challenge pow.Challenge
+	}
+
+	for _, data := range []struct {
+		name    string
+		fields  fields
+		args    args
+		want    powValueTypes.HashSum
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "success/all parameters",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-512").
+						Return(powValueTypes.NewHash(sha512.New()), nil)
+
+					return ServerDoSProtectionUsecaseOptions{
+						HashProvider:    hashProviderMock,
+						SecretKey:       "secret-key",
+						SigningHashName: "SHA-512",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				challenge: func() pow.Challenge {
+					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+					require.NoError(test, err)
+
+					createdAt, err := powValueTypes.NewCreatedAt(
+						time.Date(2000, time.January, 2, 3, 4, 5, 6, time.UTC),
+					)
+					require.NoError(test, err)
+
+					ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
+					require.NoError(test, err)
+
+					challenge, err := pow.NewChallengeBuilder().
+						SetLeadingZeroBitCount(leadingZeroBitCount).
+						SetCreatedAt(createdAt).
+						SetTTL(ttl).
+						SetResource(powValueTypes.NewResource(&url.URL{
+							Scheme: "https",
+							Host:   "example.com",
+							Path:   "/",
+						})).
+						SetSerializedPayload(powValueTypes.NewSerializedPayload("dummy")).
+						SetHash(powValueTypes.NewHash(sha256.New())).
+						SetHashDataLayout(powValueTypes.MustParseHashDataLayout(
+							"{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+								":{{ .Challenge.SerializedPayload.ToString }}" +
+								":{{ .Nonce.ToString }}",
+						)).
+						Build()
+					require.NoError(test, err)
+
+					return challenge
+				}(),
+			},
+			want: powValueTypes.NewHashSum([]byte{
+				0x4b, 0x4f, 0x54, 0x7d, 0x39, 0xc5, 0x28, 0x03,
+				0x44, 0xca, 0xc1, 0x9f, 0x32, 0x73, 0x2a, 0x5c,
+				0x67, 0x7a, 0x1f, 0x21, 0x76, 0x3e, 0xae, 0xdd,
+				0x0e, 0x21, 0xe9, 0x39, 0x34, 0x99, 0x91, 0x86,
+				0xa6, 0x2f, 0xd7, 0x1e, 0x05, 0x78, 0xc8, 0x3d,
+				0xb1, 0x37, 0xbe, 0x90, 0x30, 0xee, 0xa3, 0x0b,
+				0x77, 0x2c, 0x09, 0x19, 0xcc, 0x98, 0xfc, 0xf9,
+				0xf4, 0x28, 0x5b, 0x78, 0xc2, 0xd7, 0x8b, 0xa9,
+			}),
+			wantErr: assert.NoError,
+		},
+		{
+			name: "success/required parameters only",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-512").
+						Return(powValueTypes.NewHash(sha512.New()), nil)
+
+					return ServerDoSProtectionUsecaseOptions{
+						HashProvider:    hashProviderMock,
+						SecretKey:       "secret-key",
+						SigningHashName: "SHA-512",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				challenge: func() pow.Challenge {
+					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+					require.NoError(test, err)
+
+					challenge, err := pow.NewChallengeBuilder().
+						SetLeadingZeroBitCount(leadingZeroBitCount).
+						SetSerializedPayload(powValueTypes.NewSerializedPayload("dummy")).
+						SetHash(powValueTypes.NewHash(sha256.New())).
+						SetHashDataLayout(powValueTypes.MustParseHashDataLayout(
+							"{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+								":{{ .Challenge.SerializedPayload.ToString }}" +
+								":{{ .Nonce.ToString }}",
+						)).
+						Build()
+					require.NoError(test, err)
+
+					return challenge
+				}(),
+			},
+			want: powValueTypes.NewHashSum([]byte{
+				0x69, 0xa9, 0x45, 0x3e, 0x55, 0xcb, 0x67, 0x40,
+				0x0d, 0x42, 0xe0, 0x35, 0x58, 0x2c, 0x12, 0xb1,
+				0x19, 0x2d, 0xaf, 0x54, 0x2a, 0xe7, 0x35, 0xe8,
+				0x04, 0x08, 0x17, 0xa3, 0x0e, 0x0d, 0x10, 0x90,
+				0xf5, 0xdd, 0x4a, 0x2a, 0x17, 0xae, 0x26, 0x9a,
+				0xef, 0xe1, 0x5b, 0xd7, 0xd2, 0x1f, 0x68, 0x93,
+				0x8d, 0xd2, 0x38, 0x9e, 0x25, 0x37, 0x9f, 0x9c,
+				0xf9, 0x81, 0x89, 0xbe, 0x8f, 0x29, 0x73, 0x3e,
+			}),
+			wantErr: assert.NoError,
+		},
+		{
+			name: "error",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-512").
+						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
+
+					return ServerDoSProtectionUsecaseOptions{
+						HashProvider:    hashProviderMock,
+						SecretKey:       "secret-key",
+						SigningHashName: "SHA-512",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				challenge: func() pow.Challenge {
+					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+					require.NoError(test, err)
+
+					challenge, err := pow.NewChallengeBuilder().
+						SetLeadingZeroBitCount(leadingZeroBitCount).
+						SetSerializedPayload(powValueTypes.NewSerializedPayload("dummy")).
+						SetHash(powValueTypes.NewHash(sha256.New())).
+						SetHashDataLayout(powValueTypes.MustParseHashDataLayout(
+							"{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+								":{{ .Challenge.SerializedPayload.ToString }}" +
+								":{{ .Nonce.ToString }}",
+						)).
+						Build()
+					require.NoError(test, err)
+
+					return challenge
+				}(),
+			},
+			want:    powValueTypes.HashSum{},
+			wantErr: assert.Error,
+		},
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			usecase := ServerDoSProtectionUsecase{
+				options: data.fields.options(test),
+			}
+			got, err := usecase.SignChallenge(data.args.ctx, data.args.challenge)
+
+			assert.Equal(test, data.want, got)
+			data.wantErr(test, err)
 		})
 	}
 }
