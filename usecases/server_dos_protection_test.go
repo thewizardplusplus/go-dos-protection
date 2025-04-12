@@ -618,6 +618,302 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 	}
 }
 
+func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
+	type fields struct {
+		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
+	}
+	type args struct {
+		ctx context.Context
+	}
+
+	for _, data := range []struct {
+		name    string
+		fields  fields
+		args    args
+		want    dosProtectionUsecaseModels.SignedChallenge
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "success",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+					require.NoError(test, err)
+
+					leadingZeroBitCountProviderMock :=
+						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+					leadingZeroBitCountProviderMock.EXPECT().
+						ProvideLeadingZeroBitCount(context.Background()).
+						Return(leadingZeroBitCount, nil)
+
+					ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
+					require.NoError(test, err)
+
+					resourceProviderMock :=
+						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+					resourceProviderMock.EXPECT().
+						ProvideResource(context.Background()).
+						Return(
+							powValueTypes.NewResource(&url.URL{
+								Scheme: "https",
+								Host:   "example.com",
+								Path:   "/",
+							}),
+							nil,
+						)
+
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-256").
+						Return(powValueTypes.NewHash(sha256.New()), nil)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-512").
+						Return(powValueTypes.NewHash(sha512.New()), nil)
+
+					return ServerDoSProtectionUsecaseOptions{
+						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
+						CreatedAtModulus:            100 * 365 * 24 * time.Hour,
+						TTL:                         ttl,
+						ResourceProvider:            resourceProviderMock,
+						PayloadReader:               strings.NewReader("0123456789"),
+						PayloadSize:                 5,
+						HashProvider:                hashProviderMock,
+						GenerationHashName:          "SHA-256",
+						SecretKey:                   "secret-key",
+						SigningHashName:             "SHA-512",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want: func() dosProtectionUsecaseModels.SignedChallenge {
+				leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+				require.NoError(test, err)
+
+				createdAt, err :=
+					powValueTypes.NewCreatedAt(time.Now().Truncate(100 * 365 * 24 * time.Hour))
+				require.NoError(test, err)
+
+				ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
+				require.NoError(test, err)
+
+				challenge, err := pow.NewChallengeBuilder().
+					SetLeadingZeroBitCount(leadingZeroBitCount).
+					SetCreatedAt(createdAt).
+					SetTTL(ttl).
+					SetResource(powValueTypes.NewResource(&url.URL{
+						Scheme: "https",
+						Host:   "example.com",
+						Path:   "/",
+					})).
+					SetSerializedPayload(powValueTypes.NewSerializedPayload("3031323334")).
+					SetHash(powValueTypes.NewHash(sha256.New())).
+					SetHashDataLayout(powValueTypes.MustParseHashDataLayout(
+						"{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+							"{{ .Challenge.CreatedAt.MustGet.ToString }}" +
+							"{{ .Challenge.TTL.MustGet.ToString }}" +
+							"{{ .Challenge.Resource.MustGet.ToString }}" +
+							"{{ .Challenge.SerializedPayload.ToString }}" +
+							"{{ .Challenge.Hash.Name }}" +
+							"{{ .Challenge.HashDataLayout.ToString }}" +
+							"{{ .Nonce.ToString }}",
+					)).
+					Build()
+				require.NoError(test, err)
+
+				return dosProtectionUsecaseModels.SignedChallenge{
+					Challenge: challenge,
+					MessageAuthenticationCode: "d0fdc620b38b004c" +
+						"445060018c423826" +
+						"f516d64465a6cbb4" +
+						"a91ced6ec62f24b7" +
+						"abb4cec5564b7406" +
+						"6ead1a6d930feec2" +
+						"5104fd7767668df4" +
+						"45d001e704fe1832",
+				}
+			}(),
+			wantErr: assert.NoError,
+		},
+		{
+			name: "error/unable to generate the challenge/regular error",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(1000)
+					require.NoError(test, err)
+
+					leadingZeroBitCountProviderMock :=
+						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+					leadingZeroBitCountProviderMock.EXPECT().
+						ProvideLeadingZeroBitCount(context.Background()).
+						Return(leadingZeroBitCount, nil)
+
+					ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
+					require.NoError(test, err)
+
+					resourceProviderMock :=
+						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+					resourceProviderMock.EXPECT().
+						ProvideResource(context.Background()).
+						Return(
+							powValueTypes.NewResource(&url.URL{
+								Scheme: "https",
+								Host:   "example.com",
+								Path:   "/",
+							}),
+							nil,
+						)
+
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-256").
+						Return(powValueTypes.NewHash(sha256.New()), nil)
+
+					return ServerDoSProtectionUsecaseOptions{
+						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
+						CreatedAtModulus:            10 * time.Minute,
+						TTL:                         ttl,
+						ResourceProvider:            resourceProviderMock,
+						PayloadReader:               strings.NewReader("0123456789"),
+						PayloadSize:                 5,
+						HashProvider:                hashProviderMock,
+						GenerationHashName:          "SHA-256",
+						SecretKey:                   "secret-key",
+						SigningHashName:             "SHA-512",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want:    dosProtectionUsecaseModels.SignedChallenge{},
+			wantErr: assert.Error,
+		},
+		{
+			name: "error/" +
+				"unable to generate the challenge/" +
+				"unable to read the payload bytes",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+					require.NoError(test, err)
+
+					leadingZeroBitCountProviderMock :=
+						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+					leadingZeroBitCountProviderMock.EXPECT().
+						ProvideLeadingZeroBitCount(context.Background()).
+						Return(leadingZeroBitCount, nil)
+
+					ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
+					require.NoError(test, err)
+
+					resourceProviderMock :=
+						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+					resourceProviderMock.EXPECT().
+						ProvideResource(context.Background()).
+						Return(
+							powValueTypes.NewResource(&url.URL{
+								Scheme: "https",
+								Host:   "example.com",
+								Path:   "/",
+							}),
+							nil,
+						)
+
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectionUsecaseOptions{
+						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
+						CreatedAtModulus:            10 * time.Minute,
+						TTL:                         ttl,
+						ResourceProvider:            resourceProviderMock,
+						PayloadReader:               iotest.ErrReader(iotest.ErrTimeout),
+						PayloadSize:                 5,
+						HashProvider:                hashProviderMock,
+						GenerationHashName:          "SHA-256",
+						SecretKey:                   "secret-key",
+						SigningHashName:             "SHA-512",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want: dosProtectionUsecaseModels.SignedChallenge{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				return assert.ErrorIs(test, err, powErrors.ErrIO)
+			},
+		},
+		{
+			name: "error/unable to sign the challenge",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+					require.NoError(test, err)
+
+					leadingZeroBitCountProviderMock :=
+						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+					leadingZeroBitCountProviderMock.EXPECT().
+						ProvideLeadingZeroBitCount(context.Background()).
+						Return(leadingZeroBitCount, nil)
+
+					ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
+					require.NoError(test, err)
+
+					resourceProviderMock :=
+						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+					resourceProviderMock.EXPECT().
+						ProvideResource(context.Background()).
+						Return(
+							powValueTypes.NewResource(&url.URL{
+								Scheme: "https",
+								Host:   "example.com",
+								Path:   "/",
+							}),
+							nil,
+						)
+
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-256").
+						Return(powValueTypes.NewHash(sha256.New()), nil)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-512").
+						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
+
+					return ServerDoSProtectionUsecaseOptions{
+						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
+						CreatedAtModulus:            10 * time.Minute,
+						TTL:                         ttl,
+						ResourceProvider:            resourceProviderMock,
+						PayloadReader:               strings.NewReader("0123456789"),
+						PayloadSize:                 5,
+						HashProvider:                hashProviderMock,
+						GenerationHashName:          "SHA-256",
+						SecretKey:                   "secret-key",
+						SigningHashName:             "SHA-512",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want:    dosProtectionUsecaseModels.SignedChallenge{},
+			wantErr: assert.Error,
+		},
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			usecase := ServerDoSProtectionUsecase{
+				options: data.fields.options(test),
+			}
+			got, err := usecase.GenerateSignedChallenge(data.args.ctx)
+
+			assert.Equal(test, data.want, got)
+			data.wantErr(test, err)
+		})
+	}
+}
+
 func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 	type fields struct {
 		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
