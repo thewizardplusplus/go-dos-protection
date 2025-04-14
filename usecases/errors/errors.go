@@ -1,4 +1,4 @@
-package dosProtectionUsecaseErrors
+package dosProtectorUsecaseErrors
 
 import (
 	"errors"

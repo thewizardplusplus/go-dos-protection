@@ -1,4 +1,4 @@
-package dosProtectionUsecaseProviders
+package dosProtectorUsecaseProviders
 
 import (
 	"context"
@@ -6,14 +6,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	dosProtectionUsecases "github.com/thewizardplusplus/go-dos-protection/usecases"
+	dosProtectorUsecases "github.com/thewizardplusplus/go-dos-protector/usecases"
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
 )
 
 func TestConstantLeadingZeroBitCount_interface(test *testing.T) {
 	assert.Implements(
 		test,
-		(*dosProtectionUsecases.LeadingZeroBitCountProvider)(nil),
+		(*dosProtectorUsecases.LeadingZeroBitCountProvider)(nil),
 		ConstantLeadingZeroBitCount{},
 	)
 }

@@ -1,4 +1,4 @@
-module github.com/thewizardplusplus/go-dos-protection
+module github.com/thewizardplusplus/go-dos-protector
 
 go 1.23
 
