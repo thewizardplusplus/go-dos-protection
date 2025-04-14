@@ -1,4 +1,4 @@
-package dosProtectionUsecaseProviders
+package dosProtectorUsecaseProviders
 
 import (
 	"context"

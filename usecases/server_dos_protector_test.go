@@ -1,4 +1,4 @@
-package dosProtectionUsecases
+package dosProtectorUsecases
 
 import (
 	"context"
@@ -14,37 +14,37 @@ import (
 	"github.com/samber/mo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	dosProtectionUsecasesMocks "github.com/thewizardplusplus/go-dos-protection/mocks/github.com/thewizardplusplus/go-dos-protection/usecases"
-	dosProtectionUsecaseErrors "github.com/thewizardplusplus/go-dos-protection/usecases/errors"
-	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
+	dosProtectorUsecasesMocks "github.com/thewizardplusplus/go-dos-protector/mocks/github.com/thewizardplusplus/go-dos-protector/usecases"
+	dosProtectorUsecaseErrors "github.com/thewizardplusplus/go-dos-protector/usecases/errors"
+	dosProtectorUsecaseModels "github.com/thewizardplusplus/go-dos-protector/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
 )
 
-func TestNewServerDoSProtectionUsecase(test *testing.T) {
+func TestNewServerDoSProtectorUsecase(test *testing.T) {
 	type args struct {
-		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
+		options func(test *testing.T) ServerDoSProtectorUsecaseOptions
 	}
 
 	for _, data := range []struct {
 		name string
 		args args
-		want func(test *testing.T) ServerDoSProtectionUsecase
+		want func(test *testing.T) ServerDoSProtectorUsecase
 	}{
 		{
 			name: "success",
 			args: args{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -58,17 +58,17 @@ func TestNewServerDoSProtectionUsecase(test *testing.T) {
 					}
 				},
 			},
-			want: func(test *testing.T) ServerDoSProtectionUsecase {
+			want: func(test *testing.T) ServerDoSProtectorUsecase {
 				ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
 				require.NoError(test, err)
 
 				leadingZeroBitCountProviderMock :=
-					dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+					dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 				resourceProviderMock :=
-					dosProtectionUsecasesMocks.NewMockResourceProvider(test)
-				hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
-				return ServerDoSProtectionUsecase{
-					options: ServerDoSProtectionUsecaseOptions{
+					dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+				hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+				return ServerDoSProtectorUsecase{
+					options: ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -85,16 +85,16 @@ func TestNewServerDoSProtectionUsecase(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			got := NewServerDoSProtectionUsecase(data.args.options(test))
+			got := NewServerDoSProtectorUsecase(data.args.options(test))
 
 			assert.Equal(test, data.want(test), got)
 		})
 	}
 }
 
-func TestServerDoSProtectionUsecase_SignChallenge(test *testing.T) {
+func TestServerDoSProtectorUsecase_SignChallenge(test *testing.T) {
 	type fields struct {
-		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
+		options func(test *testing.T) ServerDoSProtectorUsecaseOptions
 	}
 	type args struct {
 		ctx       context.Context
@@ -111,13 +111,13 @@ func TestServerDoSProtectionUsecase_SignChallenge(test *testing.T) {
 		{
 			name: "success/all parameters",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.NewHash(sha512.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						HashProvider:    hashProviderMock,
 						SecretKey:       "secret-key",
 						SigningHashName: "SHA-512",
@@ -175,13 +175,13 @@ func TestServerDoSProtectionUsecase_SignChallenge(test *testing.T) {
 		{
 			name: "success/required parameters only",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.NewHash(sha512.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						HashProvider:    hashProviderMock,
 						SecretKey:       "secret-key",
 						SigningHashName: "SHA-512",
@@ -224,13 +224,13 @@ func TestServerDoSProtectionUsecase_SignChallenge(test *testing.T) {
 		{
 			name: "error",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						HashProvider:    hashProviderMock,
 						SecretKey:       "secret-key",
 						SigningHashName: "SHA-512",
@@ -263,7 +263,7 @@ func TestServerDoSProtectionUsecase_SignChallenge(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			usecase := ServerDoSProtectionUsecase{
+			usecase := ServerDoSProtectorUsecase{
 				options: data.fields.options(test),
 			}
 			got, err := usecase.SignChallenge(data.args.ctx, data.args.challenge)
@@ -274,9 +274,9 @@ func TestServerDoSProtectionUsecase_SignChallenge(test *testing.T) {
 	}
 }
 
-func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
+func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 	type fields struct {
-		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
+		options func(test *testing.T) ServerDoSProtectorUsecaseOptions
 	}
 	type args struct {
 		ctx context.Context
@@ -292,12 +292,12 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 		{
 			name: "success",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -306,7 +306,7 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -318,12 +318,12 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -380,9 +380,9 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 		{
 			name: "error/unable to get the leading zero bit count",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(powValueTypes.LeadingZeroBitCount{}, iotest.ErrTimeout)
@@ -391,9 +391,9 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -414,12 +414,12 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 		{
 			name: "error/unable to get the resource",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -428,13 +428,13 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(powValueTypes.Resource{}, iotest.ErrTimeout)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -455,12 +455,12 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 		{
 			name: "error/unable to read the payload bytes",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -469,7 +469,7 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -481,8 +481,8 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -505,12 +505,12 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 		{
 			name: "error/unable to get the hash by name",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -519,7 +519,7 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -531,12 +531,12 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -557,12 +557,12 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 		{
 			name: "error/unable to build the challenge",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(1000)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -571,7 +571,7 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -583,12 +583,12 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -608,7 +608,7 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			usecase := ServerDoSProtectionUsecase{
+			usecase := ServerDoSProtectorUsecase{
 				options: data.fields.options(test),
 			}
 			got, err := usecase.GenerateChallenge(data.args.ctx)
@@ -619,9 +619,9 @@ func TestServerDoSProtectionUsecase_GenerateChallenge(test *testing.T) {
 	}
 }
 
-func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
+func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 	type fields struct {
-		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
+		options func(test *testing.T) ServerDoSProtectorUsecaseOptions
 	}
 	type args struct {
 		ctx context.Context
@@ -631,18 +631,18 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    dosProtectionUsecaseModels.SignedChallenge
+		want    dosProtectorUsecaseModels.SignedChallenge
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "success",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -651,7 +651,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -663,7 +663,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
@@ -671,7 +671,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.NewHash(sha512.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            100 * 365 * 24 * time.Hour,
 						TTL:                         ttl,
@@ -688,7 +688,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 			args: args{
 				ctx: context.Background(),
 			},
-			want: func() dosProtectionUsecaseModels.SignedChallenge {
+			want: func() dosProtectorUsecaseModels.SignedChallenge {
 				leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 				require.NoError(test, err)
 
@@ -723,7 +723,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 					Build()
 				require.NoError(test, err)
 
-				return dosProtectionUsecaseModels.SignedChallenge{
+				return dosProtectorUsecaseModels.SignedChallenge{
 					Challenge: challenge,
 					MessageAuthenticationCode: "d0fdc620b38b004c" +
 						"445060018c423826" +
@@ -740,12 +740,12 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 		{
 			name: "error/unable to generate the challenge/regular error",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(1000)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -754,7 +754,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -766,12 +766,12 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -788,7 +788,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 			args: args{
 				ctx: context.Background(),
 			},
-			want:    dosProtectionUsecaseModels.SignedChallenge{},
+			want:    dosProtectorUsecaseModels.SignedChallenge{},
 			wantErr: assert.Error,
 		},
 		{
@@ -796,12 +796,12 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 				"unable to generate the challenge/" +
 				"unable to read the payload bytes",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -810,7 +810,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -822,8 +822,8 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -840,7 +840,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 			args: args{
 				ctx: context.Background(),
 			},
-			want: dosProtectionUsecaseModels.SignedChallenge{},
+			want: dosProtectorUsecaseModels.SignedChallenge{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
 				return assert.ErrorIs(test, err, powErrors.ErrIO)
 			},
@@ -848,12 +848,12 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 		{
 			name: "error/unable to sign the challenge",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 					require.NoError(test, err)
 
 					leadingZeroBitCountProviderMock :=
-						dosProtectionUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					leadingZeroBitCountProviderMock.EXPECT().
 						ProvideLeadingZeroBitCount(context.Background()).
 						Return(leadingZeroBitCount, nil)
@@ -862,7 +862,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 					require.NoError(test, err)
 
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -874,7 +874,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
@@ -882,7 +882,7 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
 						CreatedAtModulus:            10 * time.Minute,
 						TTL:                         ttl,
@@ -899,12 +899,12 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 			args: args{
 				ctx: context.Background(),
 			},
-			want:    dosProtectionUsecaseModels.SignedChallenge{},
+			want:    dosProtectorUsecaseModels.SignedChallenge{},
 			wantErr: assert.Error,
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			usecase := ServerDoSProtectionUsecase{
+			usecase := ServerDoSProtectorUsecase{
 				options: data.fields.options(test),
 			}
 			got, err := usecase.GenerateSignedChallenge(data.args.ctx)
@@ -915,13 +915,13 @@ func TestServerDoSProtectionUsecase_GenerateSignedChallenge(test *testing.T) {
 	}
 }
 
-func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
+func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 	type fields struct {
-		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
+		options func(test *testing.T) ServerDoSProtectorUsecaseOptions
 	}
 	type args struct {
 		ctx    context.Context
-		params dosProtectionUsecaseModels.VerifySolutionParams
+		params dosProtectorUsecaseModels.VerifySolutionParams
 	}
 
 	for _, data := range []struct {
@@ -934,9 +934,9 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 		{
 			name: "success/hash sum is present",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -948,12 +948,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -961,7 +961,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1036,9 +1036,9 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 		{
 			name: "success/hash sum is absent",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1050,12 +1050,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1063,7 +1063,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1127,18 +1127,18 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 		{
 			name: "error/unable to construct the leading zero bit count",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
-						HashProvider:     dosProtectionUsecasesMocks.NewMockHashProvider(test),
+						HashProvider:     dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: -23,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1154,25 +1154,25 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to construct the `CreatedAt` timestamp",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
-						HashProvider:     dosProtectionUsecasesMocks.NewMockHashProvider(test),
+						HashProvider:     dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "invalid",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1188,25 +1188,25 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to parse the TTL",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
-						HashProvider:     dosProtectionUsecasesMocks.NewMockHashProvider(test),
+						HashProvider:     dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 "invalid",
@@ -1222,29 +1222,29 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to get the expected resource",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(powValueTypes.Resource{}, iotest.ErrTimeout)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
-						HashProvider:     dosProtectionUsecasesMocks.NewMockHashProvider(test),
+						HashProvider:     dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1264,9 +1264,9 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 		{
 			name: "error/unable to parse the resource",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1278,15 +1278,15 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
-						HashProvider:     dosProtectionUsecasesMocks.NewMockHashProvider(test),
+						HashProvider:     dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1302,16 +1302,16 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/resource doesn't match the expected one",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1323,15 +1323,15 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
-						HashProvider:     dosProtectionUsecasesMocks.NewMockHashProvider(test),
+						HashProvider:     dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1353,9 +1353,9 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 		{
 			name: "error/unable to get the hash by name",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1367,12 +1367,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1380,7 +1380,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1400,9 +1400,9 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 		{
 			name: "error/unable to parse the hash data layout",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1414,12 +1414,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1427,7 +1427,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1441,16 +1441,16 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to build the challenge",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1462,12 +1462,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1475,7 +1475,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 1000,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1491,16 +1491,16 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/challenge is outdated",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1512,12 +1512,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1525,7 +1525,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 time.Second.String(),
@@ -1547,9 +1547,9 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 		{
 			name: "error/unable to parse the nonce",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1561,12 +1561,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1574,7 +1574,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1590,16 +1590,16 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to parse the hash sum",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1611,12 +1611,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1624,7 +1624,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1640,16 +1640,16 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to build the solution",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1661,12 +1661,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1674,7 +1674,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1693,16 +1693,16 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to verify the solution",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1714,12 +1714,12 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 					}
@@ -1727,7 +1727,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 23,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1753,7 +1753,7 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			usecase := ServerDoSProtectionUsecase{
+			usecase := ServerDoSProtectorUsecase{
 				options: data.fields.options(test),
 			}
 			got, err := usecase.VerifySolution(data.args.ctx, data.args.params)
@@ -1764,13 +1764,13 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 	}
 }
 
-func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *testing.T) { //nolint:lll
+func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *testing.T) { //nolint:lll
 	type fields struct {
-		options func(test *testing.T) ServerDoSProtectionUsecaseOptions
+		options func(test *testing.T) ServerDoSProtectorUsecaseOptions
 	}
 	type args struct {
 		ctx    context.Context
-		params dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams
+		params dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams
 	}
 
 	for _, data := range []struct {
@@ -1783,9 +1783,9 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 		{
 			name: "success",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -1797,7 +1797,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
@@ -1805,7 +1805,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.NewHash(sha512.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 						SecretKey:        "secret-key",
@@ -1815,8 +1815,8 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
-					VerifySolutionParams: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
+					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 						TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1889,15 +1889,15 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 		{
 			name: "error/unable to verify the solution/regular error",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(powValueTypes.Resource{}, iotest.ErrTimeout)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 						SecretKey:        "secret-key",
@@ -1907,8 +1907,8 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
-					VerifySolutionParams: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
+					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 						TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1939,11 +1939,11 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 				"unable to verify the solution/" +
 				"unable to construct the leading zero bit count",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
-					return ServerDoSProtectionUsecaseOptions{
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 						SecretKey:        "secret-key",
@@ -1953,8 +1953,8 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
-					VerifySolutionParams: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
+					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: -23,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 						TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -1979,16 +1979,16 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to verify the solution/unable to verify the solution",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -2000,12 +2000,12 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 						SecretKey:        "secret-key",
@@ -2015,8 +2015,8 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
-					VerifySolutionParams: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
+					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 23,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 						TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -2047,9 +2047,9 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 		{
 			name: "error/unable to sign the challenge",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -2061,7 +2061,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
@@ -2069,7 +2069,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 						SecretKey:        "secret-key",
@@ -2079,8 +2079,8 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
-					VerifySolutionParams: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
+					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 						TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -2109,9 +2109,9 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 		{
 			name: "error/unable to parse the signature",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -2123,7 +2123,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
@@ -2131,7 +2131,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.NewHash(sha512.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 						SecretKey:        "secret-key",
@@ -2141,8 +2141,8 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
-					VerifySolutionParams: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
+					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 						TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -2160,16 +2160,16 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/signature doesn't match the expected one",
 			fields: fields{
-				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					resourceProviderMock :=
-						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
 					resourceProviderMock.EXPECT().
 						ProvideResource(context.Background()).
 						Return(
@@ -2181,7 +2181,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 							nil,
 						)
 
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
@@ -2189,7 +2189,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 						ProvideHashByName(context.Background(), "SHA-512").
 						Return(powValueTypes.NewHash(sha512.New()), nil)
 
-					return ServerDoSProtectionUsecaseOptions{
+					return ServerDoSProtectorUsecaseOptions{
 						ResourceProvider: resourceProviderMock,
 						HashProvider:     hashProviderMock,
 						SecretKey:        "different-secret-key",
@@ -2199,8 +2199,8 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
-					VerifySolutionParams: dosProtectionUsecaseModels.VerifySolutionParams{
+				params: dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
+					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 						TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -2230,7 +2230,7 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			usecase := ServerDoSProtectionUsecase{
+			usecase := ServerDoSProtectorUsecase{
 				options: data.fields.options(test),
 			}
 			got, err := usecase.VerifySolutionAndChallengeSignature(

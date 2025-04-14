@@ -8,4 +8,4 @@ structname: "Mock{{ .InterfaceName }}"
 template: testify
 formatter: "goimports"
 packages:
-  github.com/thewizardplusplus/go-dos-protection:
+  github.com/thewizardplusplus/go-dos-protector:

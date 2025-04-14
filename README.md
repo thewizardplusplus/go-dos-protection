@@ -1,12 +1,12 @@
-# go-dos-protection
+# go-dos-protector
 
-[![GoDoc](https://godoc.org/github.com/thewizardplusplus/go-dos-protection?status.svg)](https://godoc.org/github.com/thewizardplusplus/go-dos-protection)
-[![Go Report Card](https://goreportcard.com/badge/github.com/thewizardplusplus/go-dos-protection)](https://goreportcard.com/report/github.com/thewizardplusplus/go-dos-protection)
+[![GoDoc](https://godoc.org/github.com/thewizardplusplus/go-dos-protector?status.svg)](https://godoc.org/github.com/thewizardplusplus/go-dos-protector)
+[![Go Report Card](https://goreportcard.com/badge/github.com/thewizardplusplus/go-dos-protector)](https://goreportcard.com/report/github.com/thewizardplusplus/go-dos-protector)
 
 ## Installation
 
 ```
-$ go get github.com/thewizardplusplus/go-dos-protection
+$ go get github.com/thewizardplusplus/go-dos-protector
 ```
 
 ## License
