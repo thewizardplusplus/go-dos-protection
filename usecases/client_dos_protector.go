@@ -1,36 +1,36 @@
-package dosProtectionUsecases
+package dosProtectorUsecases
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	dosProtectionUsecaseErrors "github.com/thewizardplusplus/go-dos-protection/usecases/errors"
-	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
+	dosProtectorUsecaseErrors "github.com/thewizardplusplus/go-dos-protector/usecases/errors"
+	dosProtectorUsecaseModels "github.com/thewizardplusplus/go-dos-protector/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
 )
 
-type ClientDoSProtectionUsecaseOptions struct {
+type ClientDoSProtectorUsecaseOptions struct {
 	HashProvider HashProvider
 }
 
-type ClientDoSProtectionUsecase struct {
-	options ClientDoSProtectionUsecaseOptions
+type ClientDoSProtectorUsecase struct {
+	options ClientDoSProtectorUsecaseOptions
 }
 
-func NewClientDoSProtectionUsecase(
-	options ClientDoSProtectionUsecaseOptions,
-) ClientDoSProtectionUsecase {
-	return ClientDoSProtectionUsecase{
+func NewClientDoSProtectorUsecase(
+	options ClientDoSProtectorUsecaseOptions,
+) ClientDoSProtectorUsecase {
+	return ClientDoSProtectorUsecase{
 		options: options,
 	}
 }
 
-func (usecase ClientDoSProtectionUsecase) SolveChallenge(
+func (usecase ClientDoSProtectorUsecase) SolveChallenge(
 	ctx context.Context,
-	params dosProtectionUsecaseModels.SolveChallengeParams,
+	params dosProtectorUsecaseModels.SolveChallengeParams,
 ) (pow.Solution, error) {
 	leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(
 		params.LeadingZeroBitCount,
@@ -38,7 +38,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to construct the leading zero bit count: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -46,7 +46,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the `CreatedAt` timestamp: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -54,7 +54,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the TTL: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -62,7 +62,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the resource: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -82,7 +82,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the hash data layout: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -100,7 +100,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to build the challenge: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 	if !challenge.IsAlive() {
@@ -117,7 +117,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		if !errors.Is(err, powErrors.ErrIO) &&
 			!errors.Is(err, powErrors.ErrTaskInterruption) {
-			err = errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters)
+			err = errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters)
 		}
 
 		return pow.Solution{}, fmt.Errorf("unable to solve the challenge: %w", err)

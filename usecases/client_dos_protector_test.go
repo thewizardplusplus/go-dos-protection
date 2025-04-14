@@ -1,4 +1,4 @@
-package dosProtectionUsecases
+package dosProtectorUsecases
 
 import (
 	"bytes"
@@ -13,57 +13,57 @@ import (
 	"github.com/samber/mo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	dosProtectionUsecasesMocks "github.com/thewizardplusplus/go-dos-protection/mocks/github.com/thewizardplusplus/go-dos-protection/usecases"
-	dosProtectionUsecaseErrors "github.com/thewizardplusplus/go-dos-protection/usecases/errors"
-	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
+	dosProtectorUsecasesMocks "github.com/thewizardplusplus/go-dos-protector/mocks/github.com/thewizardplusplus/go-dos-protector/usecases"
+	dosProtectorUsecaseErrors "github.com/thewizardplusplus/go-dos-protector/usecases/errors"
+	dosProtectorUsecaseModels "github.com/thewizardplusplus/go-dos-protector/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
 )
 
-func TestNewClientDoSProtectionUsecase(test *testing.T) {
+func TestNewClientDoSProtectorUsecase(test *testing.T) {
 	type args struct {
-		options func(test *testing.T) ClientDoSProtectionUsecaseOptions
+		options func(test *testing.T) ClientDoSProtectorUsecaseOptions
 	}
 
 	for _, data := range []struct {
 		name string
 		args args
-		want func(test *testing.T) ClientDoSProtectionUsecase
+		want func(test *testing.T) ClientDoSProtectorUsecase
 	}{
 		{
 			name: "success",
 			args: args{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					return ClientDoSProtectionUsecaseOptions{
-						HashProvider: dosProtectionUsecasesMocks.NewMockHashProvider(test),
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					return ClientDoSProtectorUsecaseOptions{
+						HashProvider: dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
-			want: func(test *testing.T) ClientDoSProtectionUsecase {
-				return ClientDoSProtectionUsecase{
-					options: ClientDoSProtectionUsecaseOptions{
-						HashProvider: dosProtectionUsecasesMocks.NewMockHashProvider(test),
+			want: func(test *testing.T) ClientDoSProtectorUsecase {
+				return ClientDoSProtectorUsecase{
+					options: ClientDoSProtectorUsecaseOptions{
+						HashProvider: dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					},
 				}
 			},
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			got := NewClientDoSProtectionUsecase(data.args.options(test))
+			got := NewClientDoSProtectorUsecase(data.args.options(test))
 
 			assert.Equal(test, data.want(test), got)
 		})
 	}
 }
 
-func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
+func TestClientDoSProtectorUsecase_SolveChallenge(test *testing.T) {
 	type fields struct {
-		options func(test *testing.T) ClientDoSProtectionUsecaseOptions
+		options func(test *testing.T) ClientDoSProtectorUsecaseOptions
 	}
 	type args struct {
 		ctx    context.Context
-		params dosProtectionUsecaseModels.SolveChallengeParams
+		params dosProtectorUsecaseModels.SolveChallengeParams
 	}
 
 	for _, data := range []struct {
@@ -76,20 +76,20 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 		{
 			name: "success/zero initial nonce",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -157,20 +157,20 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 		{
 			name: "success/random initial nonce",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -243,15 +243,15 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 		{
 			name: "error/unable to construct the leading zero bit count",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					return ClientDoSProtectionUsecaseOptions{
-						HashProvider: dosProtectionUsecasesMocks.NewMockHashProvider(test),
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					return ClientDoSProtectorUsecaseOptions{
+						HashProvider: dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: -23,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -265,22 +265,22 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to construct the `CreatedAt` timestamp",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					return ClientDoSProtectionUsecaseOptions{
-						HashProvider: dosProtectionUsecasesMocks.NewMockHashProvider(test),
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					return ClientDoSProtectorUsecaseOptions{
+						HashProvider: dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "invalid",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -294,22 +294,22 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to parse the TTL",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					return ClientDoSProtectionUsecaseOptions{
-						HashProvider: dosProtectionUsecasesMocks.NewMockHashProvider(test),
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					return ClientDoSProtectorUsecaseOptions{
+						HashProvider: dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 "invalid",
@@ -323,22 +323,22 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to parse the resource",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					return ClientDoSProtectionUsecaseOptions{
-						HashProvider: dosProtectionUsecasesMocks.NewMockHashProvider(test),
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					return ClientDoSProtectorUsecaseOptions{
+						HashProvider: dosProtectorUsecasesMocks.NewMockHashProvider(test),
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -352,27 +352,27 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to get the hash by name",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -390,20 +390,20 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 		{
 			name: "error/unable to parse the hash data layout",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -415,27 +415,27 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/unable to build the challenge",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 1000,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -449,27 +449,27 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
 		{
 			name: "error/challenge is outdated",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 time.Second.String(),
@@ -492,20 +492,20 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 				"unable to generate the random initial nonce/" +
 				"regular error",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -524,7 +524,7 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 			},
 			want: pow.Solution{},
 			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
-				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				target := dosProtectorUsecaseErrors.ErrInvalidParameters
 				return assert.ErrorIs(test, err, target)
 			},
 		},
@@ -534,20 +534,20 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 				"unable to generate the random initial nonce/" +
 				"I/O error",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -572,8 +572,8 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 		{
 			name: "error/unable to solve the challenge/context is done",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(
 							func() context.Context {
@@ -586,7 +586,7 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 						).
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
@@ -598,7 +598,7 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 
 					return ctx
 				}(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -620,20 +620,20 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 				"unable to solve the challenge/" +
 				"maximal attempt count is exceeded",
 			fields: fields{
-				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
-					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+				options: func(test *testing.T) ClientDoSProtectorUsecaseOptions {
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
-					return ClientDoSProtectionUsecaseOptions{
+					return ClientDoSProtectorUsecaseOptions{
 						HashProvider: hashProviderMock,
 					}
 				},
 			},
 			args: args{
 				ctx: context.Background(),
-				params: dosProtectionUsecaseModels.SolveChallengeParams{
+				params: dosProtectorUsecaseModels.SolveChallengeParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
 					TTL:                 (100 * 365 * 24 * time.Hour).String(),
@@ -653,7 +653,7 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 		},
 	} {
 		test.Run(data.name, func(test *testing.T) {
-			usecase := ClientDoSProtectionUsecase{
+			usecase := ClientDoSProtectorUsecase{
 				options: data.fields.options(test),
 			}
 			got, err := usecase.SolveChallenge(data.args.ctx, data.args.params)

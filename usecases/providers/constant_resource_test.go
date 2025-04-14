@@ -1,4 +1,4 @@
-package dosProtectionUsecaseProviders
+package dosProtectorUsecaseProviders
 
 import (
 	"context"
@@ -6,14 +6,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	dosProtectionUsecases "github.com/thewizardplusplus/go-dos-protection/usecases"
+	dosProtectorUsecases "github.com/thewizardplusplus/go-dos-protector/usecases"
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
 )
 
 func TestConstantResource_interface(test *testing.T) {
 	assert.Implements(
 		test,
-		(*dosProtectionUsecases.ResourceProvider)(nil),
+		(*dosProtectorUsecases.ResourceProvider)(nil),
 		ConstantResource{},
 	)
 }

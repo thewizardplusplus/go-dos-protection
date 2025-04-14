@@ -1,4 +1,4 @@
-package dosProtectionUsecaseModels
+package dosProtectorUsecaseModels
 
 import (
 	"github.com/samber/mo"

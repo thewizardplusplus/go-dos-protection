@@ -1,4 +1,4 @@
-package dosProtectionUsecases
+package dosProtectorUsecases
 
 import (
 	"bytes"
@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	dosProtectionUsecaseErrors "github.com/thewizardplusplus/go-dos-protection/usecases/errors"
-	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
+	dosProtectorUsecaseErrors "github.com/thewizardplusplus/go-dos-protector/usecases/errors"
+	dosProtectorUsecaseModels "github.com/thewizardplusplus/go-dos-protector/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
@@ -28,7 +28,7 @@ type ResourceProvider interface {
 	ProvideResource(ctx context.Context) (powValueTypes.Resource, error)
 }
 
-type ServerDoSProtectionUsecaseOptions struct {
+type ServerDoSProtectorUsecaseOptions struct {
 	LeadingZeroBitCountProvider LeadingZeroBitCountProvider
 	CreatedAtModulus            time.Duration
 	TTL                         powValueTypes.TTL
@@ -41,19 +41,19 @@ type ServerDoSProtectionUsecaseOptions struct {
 	SigningHashName             string
 }
 
-type ServerDoSProtectionUsecase struct {
-	options ServerDoSProtectionUsecaseOptions
+type ServerDoSProtectorUsecase struct {
+	options ServerDoSProtectorUsecaseOptions
 }
 
-func NewServerDoSProtectionUsecase(
-	options ServerDoSProtectionUsecaseOptions,
-) ServerDoSProtectionUsecase {
-	return ServerDoSProtectionUsecase{
+func NewServerDoSProtectorUsecase(
+	options ServerDoSProtectorUsecaseOptions,
+) ServerDoSProtectorUsecase {
+	return ServerDoSProtectorUsecase{
 		options: options,
 	}
 }
 
-func (usecase ServerDoSProtectionUsecase) SignChallenge(
+func (usecase ServerDoSProtectorUsecase) SignChallenge(
 	ctx context.Context,
 	challenge pow.Challenge,
 ) (powValueTypes.HashSum, error) {
@@ -89,7 +89,7 @@ func (usecase ServerDoSProtectionUsecase) SignChallenge(
 	return hash.ApplyTo(strings.Join(signatureDataParts, "")), nil
 }
 
-func (usecase ServerDoSProtectionUsecase) GenerateChallenge(
+func (usecase ServerDoSProtectorUsecase) GenerateChallenge(
 	ctx context.Context,
 ) (pow.Challenge, error) {
 	leadingZeroBitCount, err :=
@@ -165,12 +165,12 @@ func (usecase ServerDoSProtectionUsecase) GenerateChallenge(
 	return challenge, nil
 }
 
-func (usecase ServerDoSProtectionUsecase) GenerateSignedChallenge(
+func (usecase ServerDoSProtectorUsecase) GenerateSignedChallenge(
 	ctx context.Context,
-) (dosProtectionUsecaseModels.SignedChallenge, error) {
+) (dosProtectorUsecaseModels.SignedChallenge, error) {
 	challenge, err := usecase.GenerateChallenge(ctx)
 	if err != nil {
-		return dosProtectionUsecaseModels.SignedChallenge{}, fmt.Errorf(
+		return dosProtectorUsecaseModels.SignedChallenge{}, fmt.Errorf(
 			"unable to generate the challenge: %w",
 			err,
 		)
@@ -178,22 +178,22 @@ func (usecase ServerDoSProtectionUsecase) GenerateSignedChallenge(
 
 	signature, err := usecase.SignChallenge(ctx, challenge)
 	if err != nil {
-		return dosProtectionUsecaseModels.SignedChallenge{}, fmt.Errorf(
+		return dosProtectorUsecaseModels.SignedChallenge{}, fmt.Errorf(
 			"unable to sign the challenge: %w",
 			err,
 		)
 	}
 
-	signedChallenge := dosProtectionUsecaseModels.SignedChallenge{
+	signedChallenge := dosProtectorUsecaseModels.SignedChallenge{
 		Challenge:                 challenge,
 		MessageAuthenticationCode: hex.EncodeToString(signature.ToBytes()),
 	}
 	return signedChallenge, nil
 }
 
-func (usecase ServerDoSProtectionUsecase) VerifySolution(
+func (usecase ServerDoSProtectorUsecase) VerifySolution(
 	ctx context.Context,
-	params dosProtectionUsecaseModels.VerifySolutionParams,
+	params dosProtectorUsecaseModels.VerifySolutionParams,
 ) (pow.Solution, error) {
 	leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(
 		params.LeadingZeroBitCount,
@@ -201,7 +201,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to construct the leading zero bit count: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -209,7 +209,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the `CreatedAt` timestamp: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -217,7 +217,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the TTL: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -233,7 +233,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the resource: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 	if resource.ToString() != expectedResource.ToString() {
@@ -259,7 +259,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the hash data layout: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -277,7 +277,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to build the challenge: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 	if !challenge.IsAlive() {
@@ -291,7 +291,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the nonce: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -304,7 +304,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 		if err != nil {
 			return pow.Solution{}, fmt.Errorf(
 				"unable to parse the hash sum: %w",
-				errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+				errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 			)
 		}
 
@@ -315,7 +315,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to build the solution: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -326,9 +326,9 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	return solution, nil
 }
 
-func (usecase ServerDoSProtectionUsecase) VerifySolutionAndChallengeSignature(
+func (usecase ServerDoSProtectorUsecase) VerifySolutionAndChallengeSignature(
 	ctx context.Context,
-	params dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams,
+	params dosProtectorUsecaseModels.VerifySolutionAndChallengeSignatureParams,
 ) (pow.Solution, error) {
 	solution, err := usecase.VerifySolution(ctx, params.VerifySolutionParams)
 	if err != nil {
@@ -344,7 +344,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolutionAndChallengeSignature(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the signature: %w",
-			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			errors.Join(err, dosProtectorUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 	if !bytes.Equal(signature, expectedSignature.ToBytes()) {
