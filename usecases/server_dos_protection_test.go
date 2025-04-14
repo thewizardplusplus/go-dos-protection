@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	dosProtectionUsecasesMocks "github.com/thewizardplusplus/go-dos-protection/mocks/github.com/thewizardplusplus/go-dos-protection/usecases"
+	dosProtectionUsecaseErrors "github.com/thewizardplusplus/go-dos-protection/usecases/errors"
 	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
@@ -1151,8 +1152,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					HashSum: mo.None[string](),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to construct the `CreatedAt` timestamp",
@@ -1182,8 +1186,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					HashSum: mo.None[string](),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to parse the TTL",
@@ -1213,8 +1220,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					HashSum: mo.None[string](),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to get the expected resource",
@@ -1290,8 +1300,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					HashSum: mo.None[string](),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/resource doesn't match the expected one",
@@ -1426,8 +1439,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					HashSum:             mo.None[string](),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to build the challenge",
@@ -1473,8 +1489,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					HashSum: mo.None[string](),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/challenge is outdated",
@@ -1569,8 +1588,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					HashSum: mo.None[string](),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to parse the hash sum",
@@ -1616,8 +1638,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					HashSum: mo.Some("invalid"),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to build the solution",
@@ -1666,8 +1691,11 @@ func TestServerDoSProtectionUsecase_VerifySolution(test *testing.T) {
 					),
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to verify the solution",
@@ -1907,6 +1935,55 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 			wantErr: assert.Error,
 		},
 		{
+			name: "error/" +
+				"unable to verify the solution/" +
+				"unable to construct the leading zero bit count",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
+					resourceProviderMock :=
+						dosProtectionUsecasesMocks.NewMockResourceProvider(test)
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectionUsecaseOptions{
+						ResourceProvider: resourceProviderMock,
+						HashProvider:     hashProviderMock,
+						SecretKey:        "secret-key",
+						SigningHashName:  "SHA-512",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				params: dosProtectionUsecaseModels.VerifySolutionAndChallengeSignatureParams{ //nolint:lll
+					VerifySolutionParams: dosProtectionUsecaseModels.VerifySolutionParams{
+						LeadingZeroBitCount: -23,
+						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
+						TTL:                 (100 * 365 * 24 * time.Hour).String(),
+						Resource:            "https://example.com/",
+						Payload:             "dummy",
+						HashName:            "SHA-256",
+						HashDataLayout: "{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+							":{{ .Challenge.SerializedPayload.ToString }}" +
+							":{{ .Nonce.ToString }}",
+						Nonce:   "37",
+						HashSum: mo.None[string](),
+					},
+					MessageAuthenticationCode: "4b4f547d39c52803" +
+						"44cac19f32732a5c" +
+						"677a1f21763eaedd" +
+						"0e21e93934999186" +
+						"a62fd71e0578c83d" +
+						"b137be9030eea30b" +
+						"772c0919cc98fcf9" +
+						"f4285b78c2d78ba9",
+				},
+			},
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
+		},
+		{
 			name: "error/unable to verify the solution/unable to verify the solution",
 			fields: fields{
 				options: func(test *testing.T) ServerDoSProtectionUsecaseOptions {
@@ -2081,8 +2158,11 @@ func TestServerDoSProtectionUsecase_VerifySolutionAndChallengeSignature(test *te
 					MessageAuthenticationCode: "invalid",
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/signature doesn't match the expected one",
