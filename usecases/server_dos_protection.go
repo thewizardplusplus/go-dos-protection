@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	dosProtectionUsecaseErrors "github.com/thewizardplusplus/go-dos-protection/usecases/errors"
 	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
@@ -200,7 +201,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to construct the leading zero bit count: %w",
-			err,
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -208,13 +209,16 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the `CreatedAt` timestamp: %w",
-			err,
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
 	ttl, err := powValueTypes.ParseTTL(params.TTL)
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to parse the TTL: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to parse the TTL: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 
 	expectedResource, err := usecase.options.ResourceProvider.ProvideResource(ctx)
@@ -227,7 +231,10 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 
 	resource, err := powValueTypes.ParseResource(params.Resource)
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to parse the resource: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to parse the resource: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 	if resource.ToString() != expectedResource.ToString() {
 		return pow.Solution{}, errors.Join(
@@ -252,7 +259,7 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the hash data layout: %w",
-			err,
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -268,7 +275,10 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 		SetHashDataLayout(hashDataLayout).
 		Build()
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to build the challenge: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to build the challenge: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 	if !challenge.IsAlive() {
 		return pow.Solution{}, errors.Join(
@@ -279,7 +289,10 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 
 	nonce, err := powValueTypes.ParseNonce(params.Nonce)
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to parse the nonce: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to parse the nonce: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 
 	solutionBuilder := pow.NewSolutionBuilder().
@@ -289,7 +302,10 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 	if serializedHashSum, isPresent := params.HashSum.Get(); isPresent {
 		rawHashSum, err := hex.DecodeString(serializedHashSum)
 		if err != nil {
-			return pow.Solution{}, fmt.Errorf("unable to parse the hash sum: %w", err)
+			return pow.Solution{}, fmt.Errorf(
+				"unable to parse the hash sum: %w",
+				errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+			)
 		}
 
 		solutionBuilder.SetHashSum(powValueTypes.NewHashSum(rawHashSum))
@@ -297,7 +313,10 @@ func (usecase ServerDoSProtectionUsecase) VerifySolution(
 
 	solution, err := solutionBuilder.Build()
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to build the solution: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to build the solution: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 
 	if err := solution.Verify(); err != nil {
@@ -323,7 +342,10 @@ func (usecase ServerDoSProtectionUsecase) VerifySolutionAndChallengeSignature(
 
 	signature, err := hex.DecodeString(params.MessageAuthenticationCode)
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to parse the signature: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to parse the signature: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 	if !bytes.Equal(signature, expectedSignature.ToBytes()) {
 		return pow.Solution{}, errors.Join(

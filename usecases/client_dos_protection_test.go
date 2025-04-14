@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	dosProtectionUsecasesMocks "github.com/thewizardplusplus/go-dos-protection/mocks/github.com/thewizardplusplus/go-dos-protection/usecases"
+	dosProtectionUsecaseErrors "github.com/thewizardplusplus/go-dos-protection/usecases/errors"
 	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
@@ -262,8 +263,11 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 						":{{ .Nonce.ToString }}",
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to construct the `CreatedAt` timestamp",
@@ -288,8 +292,11 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 						":{{ .Nonce.ToString }}",
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to parse the TTL",
@@ -314,8 +321,11 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 						":{{ .Nonce.ToString }}",
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to parse the resource",
@@ -340,8 +350,11 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 						":{{ .Nonce.ToString }}",
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to get the hash by name",
@@ -400,8 +413,11 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 					HashDataLayout:      "dummy {{ .Dummy",
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/unable to build the challenge",
@@ -431,8 +447,11 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 						":{{ .Nonce.ToString }}",
 				},
 			},
-			want:    pow.Solution{},
-			wantErr: assert.Error,
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
 		},
 		{
 			name: "error/challenge is outdated",
@@ -470,7 +489,50 @@ func TestClientDoSProtectionUsecase_SolveChallenge(test *testing.T) {
 		{
 			name: "error/" +
 				"unable to solve the challenge/" +
-				"unable to generate the random initial nonce",
+				"unable to generate the random initial nonce/" +
+				"regular error",
+			fields: fields{
+				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
+					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)
+					hashProviderMock.EXPECT().
+						ProvideHashByName(context.Background(), "SHA-256").
+						Return(powValueTypes.NewHash(sha256.New()), nil)
+
+					return ClientDoSProtectionUsecaseOptions{
+						HashProvider: hashProviderMock,
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				params: dosProtectionUsecaseModels.SolveChallengeParams{
+					LeadingZeroBitCount: 5,
+					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
+					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					Resource:            "https://example.com/",
+					Payload:             "dummy",
+					HashName:            "SHA-256",
+					HashDataLayout: "{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+						":{{ .Challenge.SerializedPayload.ToString }}" +
+						":{{ .Nonce.ToString }}",
+					RandomInitialNonceParams: mo.Some(powValueTypes.RandomNonceParams{
+						RandomReader: bytes.NewReader([]byte("dummy")),
+						MinRawValue:  big.NewInt(142),
+						MaxRawValue:  big.NewInt(123),
+					}),
+				},
+			},
+			want: pow.Solution{},
+			wantErr: func(test assert.TestingT, err error, msgAndArgs ...any) bool {
+				target := dosProtectionUsecaseErrors.ErrInvalidParameters
+				return assert.ErrorIs(test, err, target)
+			},
+		},
+		{
+			name: "error/" +
+				"unable to solve the challenge/" +
+				"unable to generate the random initial nonce/" +
+				"I/O error",
 			fields: fields{
 				options: func(test *testing.T) ClientDoSProtectionUsecaseOptions {
 					hashProviderMock := dosProtectionUsecasesMocks.NewMockHashProvider(test)

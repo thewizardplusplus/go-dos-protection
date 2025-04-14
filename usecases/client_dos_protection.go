@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	dosProtectionUsecaseErrors "github.com/thewizardplusplus/go-dos-protection/usecases/errors"
 	dosProtectionUsecaseModels "github.com/thewizardplusplus/go-dos-protection/usecases/models"
 	pow "github.com/thewizardplusplus/go-pow"
 	powErrors "github.com/thewizardplusplus/go-pow/errors"
@@ -37,7 +38,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to construct the leading zero bit count: %w",
-			err,
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -45,18 +46,24 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the `CreatedAt` timestamp: %w",
-			err,
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
 	ttl, err := powValueTypes.ParseTTL(params.TTL)
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to parse the TTL: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to parse the TTL: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 
 	resource, err := powValueTypes.ParseResource(params.Resource)
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to parse the resource: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to parse the resource: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 
 	hash, err := usecase.options.HashProvider.ProvideHashByName(
@@ -75,7 +82,7 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the hash data layout: %w",
-			err,
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
 		)
 	}
 
@@ -91,7 +98,10 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 		SetHashDataLayout(hashDataLayout).
 		Build()
 	if err != nil {
-		return pow.Solution{}, fmt.Errorf("unable to build the challenge: %w", err)
+		return pow.Solution{}, fmt.Errorf(
+			"unable to build the challenge: %w",
+			errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters),
+		)
 	}
 	if !challenge.IsAlive() {
 		return pow.Solution{}, errors.Join(
@@ -105,6 +115,11 @@ func (usecase ClientDoSProtectionUsecase) SolveChallenge(
 		RandomInitialNonceParams: params.RandomInitialNonceParams,
 	})
 	if err != nil {
+		if !errors.Is(err, powErrors.ErrIO) &&
+			!errors.Is(err, powErrors.ErrTaskInterruption) {
+			err = errors.Join(err, dosProtectionUsecaseErrors.ErrInvalidParameters)
+		}
+
 		return pow.Solution{}, fmt.Errorf("unable to solve the challenge: %w", err)
 	}
 
