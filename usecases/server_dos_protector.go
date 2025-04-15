@@ -28,17 +28,24 @@ type ResourceProvider interface {
 	ProvideResource(ctx context.Context) (powValueTypes.Resource, error)
 }
 
+type SerializedPayloadProvider interface {
+	ProvideSerializedPayload(
+		ctx context.Context,
+	) (powValueTypes.SerializedPayload, error)
+}
+
 type ServerDoSProtectorUsecaseOptions struct {
-	LeadingZeroBitCountProvider LeadingZeroBitCountProvider
-	CreatedAtModulus            time.Duration
-	TTL                         powValueTypes.TTL
-	ResourceProvider            ResourceProvider
-	PayloadReader               io.Reader
-	PayloadSize                 int
-	HashProvider                HashProvider
-	GenerationHashName          string
-	SecretKey                   string
-	SigningHashName             string
+	LeadingZeroBitCountProvider   LeadingZeroBitCountProvider
+	CreatedAtModulus              time.Duration
+	TTL                           powValueTypes.TTL
+	ResourceProvider              ResourceProvider
+	MainSerializedPayloadProvider SerializedPayloadProvider
+	RandomPayloadByteReader       io.Reader
+	RandomPayloadByteCount        int
+	HashProvider                  HashProvider
+	GenerationHashName            string
+	SecretKey                     string
+	SigningHashName               string
 }
 
 type ServerDoSProtectorUsecase struct {
@@ -115,13 +122,22 @@ func (usecase ServerDoSProtectorUsecase) GenerateChallenge(
 		return pow.Challenge{}, fmt.Errorf("unable to get the resource: %w", err)
 	}
 
-	rawPayload := make([]byte, usecase.options.PayloadSize)
+	mainSerializedPayload, err :=
+		usecase.options.MainSerializedPayloadProvider.ProvideSerializedPayload(ctx)
+	if err != nil {
+		return pow.Challenge{}, fmt.Errorf(
+			"unable to get the main serialized payload: %w",
+			err,
+		)
+	}
+
+	randomPayloadBytes := make([]byte, usecase.options.RandomPayloadByteCount)
 	if _, err := io.ReadFull(
-		usecase.options.PayloadReader,
-		rawPayload,
+		usecase.options.RandomPayloadByteReader,
+		randomPayloadBytes,
 	); err != nil {
 		return pow.Challenge{}, fmt.Errorf(
-			"unable to read the payload bytes: %w",
+			"unable to read the random payload bytes: %w",
 			errors.Join(err, powErrors.ErrIO),
 		)
 	}
@@ -143,9 +159,9 @@ func (usecase ServerDoSProtectorUsecase) GenerateChallenge(
 		SetCreatedAt(createdAt).
 		SetTTL(usecase.options.TTL).
 		SetResource(resource).
-		SetSerializedPayload(
-			powValueTypes.NewSerializedPayload(hex.EncodeToString(rawPayload)),
-		).
+		SetSerializedPayload(powValueTypes.NewSerializedPayload(
+			mainSerializedPayload.ToString() + hex.EncodeToString(randomPayloadBytes),
+		)).
 		SetHash(hash).
 		SetHashDataLayout(powValueTypes.MustParseHashDataLayout(
 			"{{ .Challenge.LeadingZeroBitCount.ToInt }}" +

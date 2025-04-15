@@ -43,18 +43,21 @@ func TestNewServerDoSProtectorUsecase(test *testing.T) {
 						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 					resourceProviderMock :=
 						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
-						SecretKey:                   "secret-key",
-						SigningHashName:             "SHA-512",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
+						SecretKey:                     "secret-key",
+						SigningHashName:               "SHA-512",
 					}
 				},
 			},
@@ -66,19 +69,22 @@ func TestNewServerDoSProtectorUsecase(test *testing.T) {
 					dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
 				resourceProviderMock :=
 					dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+				serializedPayloadProviderMock :=
+					dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
 				hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 				return ServerDoSProtectorUsecase{
 					options: ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
-						SecretKey:                   "secret-key",
-						SigningHashName:             "SHA-512",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
+						SecretKey:                     "secret-key",
+						SigningHashName:               "SHA-512",
 					},
 				}
 			},
@@ -318,20 +324,27 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 							nil,
 						)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.NewSerializedPayload("dummy"), nil)
+
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
 					}
 				},
 			},
@@ -358,7 +371,9 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 						Host:   "example.com",
 						Path:   "/",
 					})).
-					SetSerializedPayload(powValueTypes.NewSerializedPayload("3031323334")).
+					SetSerializedPayload(powValueTypes.NewSerializedPayload(
+						"dummy3031323334",
+					)).
 					SetHash(powValueTypes.NewHash(sha256.New())).
 					SetHashDataLayout(powValueTypes.MustParseHashDataLayout(
 						"{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
@@ -392,16 +407,19 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 
 					resourceProviderMock :=
 						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
 					}
 				},
 			},
@@ -433,16 +451,19 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 						ProvideResource(context.Background()).
 						Return(powValueTypes.Resource{}, iotest.ErrTimeout)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
 					}
 				},
 			},
@@ -453,7 +474,7 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 			wantErr: assert.Error,
 		},
 		{
-			name: "error/unable to read the payload bytes",
+			name: "error/unable to get the main serialized payload",
 			fields: fields{
 				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
@@ -481,16 +502,78 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 							nil,
 						)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.SerializedPayload{}, iotest.ErrTimeout)
+
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               iotest.ErrReader(iotest.ErrTimeout),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
+					}
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want:    pow.Challenge{},
+			wantErr: assert.Error,
+		},
+		{
+			name: "error/unable to read the random payload bytes",
+			fields: fields{
+				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
+					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+					require.NoError(test, err)
+
+					leadingZeroBitCountProviderMock :=
+						dosProtectorUsecasesMocks.NewMockLeadingZeroBitCountProvider(test)
+					leadingZeroBitCountProviderMock.EXPECT().
+						ProvideLeadingZeroBitCount(context.Background()).
+						Return(leadingZeroBitCount, nil)
+
+					ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
+					require.NoError(test, err)
+
+					resourceProviderMock :=
+						dosProtectorUsecasesMocks.NewMockResourceProvider(test)
+					resourceProviderMock.EXPECT().
+						ProvideResource(context.Background()).
+						Return(
+							powValueTypes.NewResource(&url.URL{
+								Scheme: "https",
+								Host:   "example.com",
+								Path:   "/",
+							}),
+							nil,
+						)
+
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.NewSerializedPayload("dummy"), nil)
+
+					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
+					return ServerDoSProtectorUsecaseOptions{
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       iotest.ErrReader(iotest.ErrTimeout),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
 					}
 				},
 			},
@@ -531,20 +614,27 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 							nil,
 						)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.NewSerializedPayload("dummy"), nil)
+
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
 
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
 					}
 				},
 			},
@@ -583,20 +673,27 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 							nil,
 						)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.NewSerializedPayload("dummy"), nil)
+
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
 					}
 				},
 			},
@@ -663,6 +760,12 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 							nil,
 						)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.NewSerializedPayload("dummy"), nil)
+
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
@@ -672,16 +775,17 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 						Return(powValueTypes.NewHash(sha512.New()), nil)
 
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            100 * 365 * 24 * time.Hour,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
-						SecretKey:                   "secret-key",
-						SigningHashName:             "SHA-512",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              100 * 365 * 24 * time.Hour,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
+						SecretKey:                     "secret-key",
+						SigningHashName:               "SHA-512",
 					}
 				},
 			},
@@ -708,7 +812,9 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 						Host:   "example.com",
 						Path:   "/",
 					})).
-					SetSerializedPayload(powValueTypes.NewSerializedPayload("3031323334")).
+					SetSerializedPayload(powValueTypes.NewSerializedPayload(
+						"dummy3031323334",
+					)).
 					SetHash(powValueTypes.NewHash(sha256.New())).
 					SetHashDataLayout(powValueTypes.MustParseHashDataLayout(
 						"{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
@@ -725,14 +831,14 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 
 				return dosProtectorUsecaseModels.SignedChallenge{
 					Challenge: challenge,
-					MessageAuthenticationCode: "d0fdc620b38b004c" +
-						"445060018c423826" +
-						"f516d64465a6cbb4" +
-						"a91ced6ec62f24b7" +
-						"abb4cec5564b7406" +
-						"6ead1a6d930feec2" +
-						"5104fd7767668df4" +
-						"45d001e704fe1832",
+					MessageAuthenticationCode: "52d6861d5a01246d" +
+						"03a47bc3783b40a8" +
+						"d85b1d15c1bd9d1d" +
+						"71504f64bf88bcfc" +
+						"82a00710da13439e" +
+						"ba9f965c576323e6" +
+						"14ba27e283f9bc6c" +
+						"c3783edaaa0ebf0a",
 				}
 			}(),
 			wantErr: assert.NoError,
@@ -766,22 +872,29 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 							nil,
 						)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.NewSerializedPayload("dummy"), nil)
+
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
 						Return(powValueTypes.NewHash(sha256.New()), nil)
 
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
-						SecretKey:                   "secret-key",
-						SigningHashName:             "SHA-512",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
+						SecretKey:                     "secret-key",
+						SigningHashName:               "SHA-512",
 					}
 				},
 			},
@@ -794,7 +907,7 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 		{
 			name: "error/" +
 				"unable to generate the challenge/" +
-				"unable to read the payload bytes",
+				"unable to read the random payload bytes",
 			fields: fields{
 				options: func(test *testing.T) ServerDoSProtectorUsecaseOptions {
 					leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
@@ -822,18 +935,25 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 							nil,
 						)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.NewSerializedPayload("dummy"), nil)
+
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               iotest.ErrReader(iotest.ErrTimeout),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
-						SecretKey:                   "secret-key",
-						SigningHashName:             "SHA-512",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       iotest.ErrReader(iotest.ErrTimeout),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
+						SecretKey:                     "secret-key",
+						SigningHashName:               "SHA-512",
 					}
 				},
 			},
@@ -874,6 +994,12 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 							nil,
 						)
 
+					serializedPayloadProviderMock :=
+						dosProtectorUsecasesMocks.NewMockSerializedPayloadProvider(test)
+					serializedPayloadProviderMock.EXPECT().
+						ProvideSerializedPayload(context.Background()).
+						Return(powValueTypes.NewSerializedPayload("dummy"), nil)
+
 					hashProviderMock := dosProtectorUsecasesMocks.NewMockHashProvider(test)
 					hashProviderMock.EXPECT().
 						ProvideHashByName(context.Background(), "SHA-256").
@@ -883,16 +1009,17 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 						Return(powValueTypes.Hash{}, iotest.ErrTimeout)
 
 					return ServerDoSProtectorUsecaseOptions{
-						LeadingZeroBitCountProvider: leadingZeroBitCountProviderMock,
-						CreatedAtModulus:            10 * time.Minute,
-						TTL:                         ttl,
-						ResourceProvider:            resourceProviderMock,
-						PayloadReader:               strings.NewReader("0123456789"),
-						PayloadSize:                 5,
-						HashProvider:                hashProviderMock,
-						GenerationHashName:          "SHA-256",
-						SecretKey:                   "secret-key",
-						SigningHashName:             "SHA-512",
+						LeadingZeroBitCountProvider:   leadingZeroBitCountProviderMock,
+						CreatedAtModulus:              10 * time.Minute,
+						TTL:                           ttl,
+						ResourceProvider:              resourceProviderMock,
+						MainSerializedPayloadProvider: serializedPayloadProviderMock,
+						RandomPayloadByteReader:       strings.NewReader("0123456789"),
+						RandomPayloadByteCount:        5,
+						HashProvider:                  hashProviderMock,
+						GenerationHashName:            "SHA-256",
+						SecretKey:                     "secret-key",
+						SigningHashName:               "SHA-512",
 					}
 				},
 			},
