@@ -108,7 +108,9 @@ func (usecase ServerDoSProtectorUsecase) GenerateChallenge(
 		)
 	}
 
-	rawCreatedAt := time.Now().Truncate(usecase.options.CreatedAtModulus)
+	rawCreatedAt := time.Now().
+		In(time.UTC).
+		Truncate(usecase.options.CreatedAtModulus)
 	createdAt, err := powValueTypes.NewCreatedAt(rawCreatedAt)
 	if err != nil {
 		return pow.Challenge{}, fmt.Errorf(

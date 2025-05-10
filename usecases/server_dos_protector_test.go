@@ -355,8 +355,8 @@ func TestServerDoSProtectorUsecase_GenerateChallenge(test *testing.T) {
 				leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 				require.NoError(test, err)
 
-				createdAt, err :=
-					powValueTypes.NewCreatedAt(time.Now().Truncate(10 * time.Minute))
+				rawCreatedAt := time.Now().In(time.UTC).Truncate(10 * time.Minute)
+				createdAt, err := powValueTypes.NewCreatedAt(rawCreatedAt)
 				require.NoError(test, err)
 
 				ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
@@ -796,8 +796,8 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 				leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
 				require.NoError(test, err)
 
-				createdAt, err :=
-					powValueTypes.NewCreatedAt(time.Now().Truncate(100 * 365 * 24 * time.Hour))
+				rawCreatedAt := time.Now().In(time.UTC).Truncate(100 * 365 * 24 * time.Hour)
+				createdAt, err := powValueTypes.NewCreatedAt(rawCreatedAt)
 				require.NoError(test, err)
 
 				ttl, err := powValueTypes.NewTTL(100 * 365 * 24 * time.Hour)
@@ -831,14 +831,14 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 
 				return dosProtectorUsecaseModels.SignedChallenge{
 					Challenge: challenge,
-					MessageAuthenticationCode: "52d6861d5a01246d" +
-						"03a47bc3783b40a8" +
-						"d85b1d15c1bd9d1d" +
-						"71504f64bf88bcfc" +
-						"82a00710da13439e" +
-						"ba9f965c576323e6" +
-						"14ba27e283f9bc6c" +
-						"c3783edaaa0ebf0a",
+					MessageAuthenticationCode: "ac163758d5bdd980" +
+						"c712c64b6cbcf0d6" +
+						"9e868b3f7da5dfda" +
+						"58703eee68cf1db5" +
+						"3bc319571e09cc63" +
+						"f01bbffcbdd441ce" +
+						"43f14fe262706c98" +
+						"5a62d4019de6b661",
 				}
 			}(),
 			wantErr: assert.NoError,
