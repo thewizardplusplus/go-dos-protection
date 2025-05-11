@@ -2,8 +2,20 @@ package dosProtectorAdapterModels
 
 import (
 	"errors"
+	"net/url"
+	"strconv"
 
 	pow "github.com/thewizardplusplus/go-pow"
+)
+
+const (
+	leadingZeroBitCountKey = "leading-zero-bit-count"
+	createdAtKey           = "created-at"
+	ttlKey                 = "ttl"
+	resourceKey            = "resource"
+	payloadKey             = "payload"
+	hashNameKey            = "hash-name"
+	hashDataLayoutKey      = "hash-data-layout"
 )
 
 type Challenge struct {
@@ -42,4 +54,17 @@ func NewChallengeFromEntity(entity pow.Challenge) (Challenge, error) {
 		HashDataLayout:      entity.HashDataLayout().ToString(),
 	}
 	return model, nil
+}
+
+func (model Challenge) ToQuery() string {
+	values := make(url.Values)
+	values.Set(leadingZeroBitCountKey, strconv.Itoa(model.LeadingZeroBitCount))
+	values.Set(createdAtKey, model.CreatedAt)
+	values.Set(ttlKey, model.TTL)
+	values.Set(resourceKey, model.Resource)
+	values.Set(payloadKey, model.Payload)
+	values.Set(hashNameKey, model.HashName)
+	values.Set(hashDataLayoutKey, model.HashDataLayout)
+
+	return values.Encode()
 }

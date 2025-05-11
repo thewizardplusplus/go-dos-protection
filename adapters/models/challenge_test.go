@@ -156,3 +156,61 @@ func TestNewChallengeFromEntity(test *testing.T) {
 		})
 	}
 }
+
+func TestChallenge_ToQuery(test *testing.T) {
+	type fields struct {
+		LeadingZeroBitCount int
+		CreatedAt           string
+		TTL                 string
+		Resource            string
+		Payload             string
+		HashName            string
+		HashDataLayout      string
+	}
+
+	for _, data := range []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "success",
+			fields: fields{
+				LeadingZeroBitCount: 5,
+				CreatedAt:           "2000-01-02T03:04:05.000000006Z",
+				TTL:                 (100 * 365 * 24 * time.Hour).String(),
+				Resource:            "https://example.com/",
+				Payload:             "dummy",
+				HashName:            "SHA-256",
+				HashDataLayout: "{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+					":{{ .Challenge.SerializedPayload.ToString }}" +
+					":{{ .Nonce.ToString }}",
+			},
+			want: "created-at=2000-01-02T03%3A04%3A05.000000006Z" +
+				"&hash-data-layout=" +
+				"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D" +
+				"%3A%7B%7B+.Challenge.SerializedPayload.ToString+%7D%7D" +
+				"%3A%7B%7B+.Nonce.ToString+%7D%7D" +
+				"&hash-name=SHA-256" +
+				"&leading-zero-bit-count=5" +
+				"&payload=dummy" +
+				"&resource=https%3A%2F%2Fexample.com%2F" +
+				"&ttl=" + (100 * 365 * 24 * time.Hour).String(),
+		},
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			model := Challenge{
+				LeadingZeroBitCount: data.fields.LeadingZeroBitCount,
+				CreatedAt:           data.fields.CreatedAt,
+				TTL:                 data.fields.TTL,
+				Resource:            data.fields.Resource,
+				Payload:             data.fields.Payload,
+				HashName:            data.fields.HashName,
+				HashDataLayout:      data.fields.HashDataLayout,
+			}
+			got := model.ToQuery()
+
+			assert.Equal(test, data.want, got)
+		})
+	}
+}
