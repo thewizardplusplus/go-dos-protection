@@ -157,6 +157,70 @@ func TestNewChallengeFromEntity(test *testing.T) {
 	}
 }
 
+func TestParseChallengeFromQuery(test *testing.T) {
+	type args struct {
+		query string
+	}
+
+	for _, data := range []struct {
+		name    string
+		args    args
+		want    Challenge
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "success",
+			args: args{
+				query: "created-at=2000-01-02T03%3A04%3A05.000000006Z" +
+					"&hash-data-layout=" +
+					"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D" +
+					"%3A%7B%7B+.Challenge.SerializedPayload.ToString+%7D%7D" +
+					"%3A%7B%7B+.Nonce.ToString+%7D%7D" +
+					"&hash-name=SHA-256" +
+					"&leading-zero-bit-count=5" +
+					"&payload=dummy" +
+					"&resource=https%3A%2F%2Fexample.com%2F" +
+					"&ttl=" + (100 * 365 * 24 * time.Hour).String(),
+			},
+			want: Challenge{
+				LeadingZeroBitCount: 5,
+				CreatedAt:           "2000-01-02T03:04:05.000000006Z",
+				TTL:                 (100 * 365 * 24 * time.Hour).String(),
+				Resource:            "https://example.com/",
+				Payload:             "dummy",
+				HashName:            "SHA-256",
+				HashDataLayout: "{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+					":{{ .Challenge.SerializedPayload.ToString }}" +
+					":{{ .Nonce.ToString }}",
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "error/unable to parse the query",
+			args: args{
+				query: "%",
+			},
+			want:    Challenge{},
+			wantErr: assert.Error,
+		},
+		{
+			name: "error/unable to parse the leading zero bit count",
+			args: args{
+				query: "leading-zero-bit-count=invalid",
+			},
+			want:    Challenge{},
+			wantErr: assert.Error,
+		},
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			got, err := ParseChallengeFromQuery(data.args.query)
+
+			assert.Equal(test, data.want, got)
+			data.wantErr(test, err)
+		})
+	}
+}
+
 func TestChallenge_ToQuery(test *testing.T) {
 	type fields struct {
 		LeadingZeroBitCount int

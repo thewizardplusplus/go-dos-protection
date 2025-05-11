@@ -2,6 +2,7 @@ package dosProtectorAdapterModels
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strconv"
 
@@ -52,6 +53,32 @@ func NewChallengeFromEntity(entity pow.Challenge) (Challenge, error) {
 		Payload:             entity.SerializedPayload().ToString(),
 		HashName:            entity.Hash().Name(),
 		HashDataLayout:      entity.HashDataLayout().ToString(),
+	}
+	return model, nil
+}
+
+func ParseChallengeFromQuery(query string) (Challenge, error) {
+	values, err := url.ParseQuery(query)
+	if err != nil {
+		return Challenge{}, fmt.Errorf("unable to parse the query: %w", err)
+	}
+
+	leadingZeroBitCount, err := strconv.Atoi(values.Get(leadingZeroBitCountKey))
+	if err != nil {
+		return Challenge{}, fmt.Errorf(
+			"unable to parse the leading zero bit count: %w",
+			err,
+		)
+	}
+
+	model := Challenge{
+		LeadingZeroBitCount: leadingZeroBitCount,
+		CreatedAt:           values.Get(createdAtKey),
+		TTL:                 values.Get(ttlKey),
+		Resource:            values.Get(resourceKey),
+		Payload:             values.Get(payloadKey),
+		HashName:            values.Get(hashNameKey),
+		HashDataLayout:      values.Get(hashDataLayoutKey),
 	}
 	return model, nil
 }
