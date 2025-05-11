@@ -228,6 +228,111 @@ func TestNewSolutionFromEntity(test *testing.T) {
 	}
 }
 
+func TestParseSolutionFromQuery(test *testing.T) {
+	type args struct {
+		query string
+	}
+
+	for _, data := range []struct {
+		name    string
+		args    args
+		want    Solution
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "success/with a hash sum",
+			args: args{
+				query: "created-at=2000-01-02T03%3A04%3A05.000000006Z" +
+					"&hash-data-layout=" +
+					"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D" +
+					"%3A%7B%7B+.Challenge.SerializedPayload.ToString+%7D%7D" +
+					"%3A%7B%7B+.Nonce.ToString+%7D%7D" +
+					"&hash-name=SHA-256" +
+					"&hash-sum=" +
+					"005d372c56e6c6b5" +
+					"2ad4a8325654692e" +
+					"c9aa3af5f7302174" +
+					"8bc3fdb124ae9b20" +
+					"&leading-zero-bit-count=5" +
+					"&nonce=37" +
+					"&payload=dummy" +
+					"&resource=https%3A%2F%2Fexample.com%2F" +
+					"&ttl=" + (100 * 365 * 24 * time.Hour).String(),
+			},
+			want: Solution{
+				Challenge: Challenge{
+					LeadingZeroBitCount: 5,
+					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
+					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					Resource:            "https://example.com/",
+					Payload:             "dummy",
+					HashName:            "SHA-256",
+					HashDataLayout: "{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+						":{{ .Challenge.SerializedPayload.ToString }}" +
+						":{{ .Nonce.ToString }}",
+				},
+
+				Nonce: "37",
+				HashSum: mo.Some(
+					"005d372c56e6c6b5" +
+						"2ad4a8325654692e" +
+						"c9aa3af5f7302174" +
+						"8bc3fdb124ae9b20",
+				),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "success/without a hash sum",
+			args: args{
+				query: "created-at=2000-01-02T03%3A04%3A05.000000006Z" +
+					"&hash-data-layout=" +
+					"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D" +
+					"%3A%7B%7B+.Challenge.SerializedPayload.ToString+%7D%7D" +
+					"%3A%7B%7B+.Nonce.ToString+%7D%7D" +
+					"&hash-name=SHA-256" +
+					"&leading-zero-bit-count=5" +
+					"&nonce=37" +
+					"&payload=dummy" +
+					"&resource=https%3A%2F%2Fexample.com%2F" +
+					"&ttl=" + (100 * 365 * 24 * time.Hour).String(),
+			},
+			want: Solution{
+				Challenge: Challenge{
+					LeadingZeroBitCount: 5,
+					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
+					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					Resource:            "https://example.com/",
+					Payload:             "dummy",
+					HashName:            "SHA-256",
+					HashDataLayout: "{{ .Challenge.LeadingZeroBitCount.ToInt }}" +
+						":{{ .Challenge.SerializedPayload.ToString }}" +
+						":{{ .Nonce.ToString }}",
+				},
+
+				Nonce:   "37",
+				HashSum: mo.None[string](),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "error/unable to parse the challenge",
+			args: args{
+				query: "leading-zero-bit-count=invalid",
+			},
+			want:    Solution{},
+			wantErr: assert.Error,
+		},
+	} {
+		test.Run(data.name, func(test *testing.T) {
+			got, err := ParseSolutionFromQuery(data.args.query)
+
+			assert.Equal(test, data.want, got)
+			data.wantErr(test, err)
+		})
+	}
+}
+
 func TestSolution_ToQuery(test *testing.T) {
 	type fields struct {
 		Challenge Challenge

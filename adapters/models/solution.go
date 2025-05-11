@@ -42,6 +42,26 @@ func NewSolutionFromEntity(entity pow.Solution) (Solution, error) {
 	return model, nil
 }
 
+func ParseSolutionFromQuery(query string) (Solution, error) {
+	challenge, err := ParseChallengeFromQuery(query)
+	if err != nil {
+		return Solution{}, fmt.Errorf("unable to parse the challenge: %w", err)
+	}
+
+	values, err := url.ParseQuery(query)
+	if err != nil {
+		return Solution{}, fmt.Errorf("unable to parse the query: %w", err)
+	}
+
+	model := Solution{
+		Challenge: challenge,
+
+		Nonce:   values.Get(nonceKey),
+		HashSum: mo.EmptyableToOption(values.Get(hashSumKey)),
+	}
+	return model, nil
+}
+
 func (model Solution) ToQuery() string {
 	values := make(url.Values)
 	values.Set(leadingZeroBitCountKey, strconv.Itoa(model.LeadingZeroBitCount))
