@@ -84,14 +84,5 @@ func ParseChallengeFromQuery(query string) (Challenge, error) {
 }
 
 func (model Challenge) ToQuery() string {
-	values := make(url.Values)
-	values.Set(leadingZeroBitCountKey, strconv.Itoa(model.LeadingZeroBitCount))
-	values.Set(createdAtKey, model.CreatedAt)
-	values.Set(ttlKey, model.TTL)
-	values.Set(resourceKey, model.Resource)
-	values.Set(payloadKey, model.Payload)
-	values.Set(hashNameKey, model.HashName)
-	values.Set(hashDataLayoutKey, model.HashDataLayout)
-
-	return values.Encode()
+	return transformChallengeToValues(model).Encode()
 }
