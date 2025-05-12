@@ -10,13 +10,13 @@ import (
 )
 
 const (
-	leadingZeroBitCountKey = "leading-zero-bit-count"
-	createdAtKey           = "created-at"
-	ttlKey                 = "ttl"
-	resourceKey            = "resource"
-	payloadKey             = "payload"
-	hashNameKey            = "hash-name"
-	hashDataLayoutKey      = "hash-data-layout"
+	LeadingZeroBitCountKey = "leading-zero-bit-count"
+	CreatedAtKey           = "created-at"
+	TTLKey                 = "ttl"
+	ResourceKey            = "resource"
+	PayloadKey             = "payload"
+	HashNameKey            = "hash-name"
+	HashDataLayoutKey      = "hash-data-layout"
 )
 
 type Challenge struct {
@@ -63,7 +63,7 @@ func ParseChallengeFromQuery(query string) (Challenge, error) {
 		return Challenge{}, fmt.Errorf("unable to parse the query: %w", err)
 	}
 
-	leadingZeroBitCount, err := strconv.Atoi(values.Get(leadingZeroBitCountKey))
+	leadingZeroBitCount, err := strconv.Atoi(values.Get(LeadingZeroBitCountKey))
 	if err != nil {
 		return Challenge{}, fmt.Errorf(
 			"unable to parse the leading zero bit count: %w",
@@ -73,12 +73,12 @@ func ParseChallengeFromQuery(query string) (Challenge, error) {
 
 	model := Challenge{
 		LeadingZeroBitCount: leadingZeroBitCount,
-		CreatedAt:           values.Get(createdAtKey),
-		TTL:                 values.Get(ttlKey),
-		Resource:            values.Get(resourceKey),
-		Payload:             values.Get(payloadKey),
-		HashName:            values.Get(hashNameKey),
-		HashDataLayout:      values.Get(hashDataLayoutKey),
+		CreatedAt:           values.Get(CreatedAtKey),
+		TTL:                 values.Get(TTLKey),
+		Resource:            values.Get(ResourceKey),
+		Payload:             values.Get(PayloadKey),
+		HashName:            values.Get(HashNameKey),
+		HashDataLayout:      values.Get(HashDataLayoutKey),
 	}
 	return model, nil
 }

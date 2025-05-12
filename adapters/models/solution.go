@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	nonceKey   = "nonce"
-	hashSumKey = "hash-sum"
+	NonceKey   = "nonce"
+	HashSumKey = "hash-sum"
 )
 
 type Solution struct {
@@ -55,17 +55,17 @@ func ParseSolutionFromQuery(query string) (Solution, error) {
 	model := Solution{
 		Challenge: challenge,
 
-		Nonce:   values.Get(nonceKey),
-		HashSum: mo.EmptyableToOption(values.Get(hashSumKey)),
+		Nonce:   values.Get(NonceKey),
+		HashSum: mo.EmptyableToOption(values.Get(HashSumKey)),
 	}
 	return model, nil
 }
 
 func (model Solution) ToQuery() string {
 	values := transformChallengeToValues(model.Challenge)
-	values.Set(nonceKey, model.Nonce)
+	values.Set(NonceKey, model.Nonce)
 	if hashSum, isPresent := model.HashSum.Get(); isPresent {
-		values.Set(hashSumKey, hashSum)
+		values.Set(HashSumKey, hashSum)
 	}
 
 	return values.Encode()

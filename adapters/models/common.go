@@ -7,13 +7,13 @@ import (
 
 func transformChallengeToValues(model Challenge) url.Values {
 	values := make(url.Values)
-	values.Set(leadingZeroBitCountKey, strconv.Itoa(model.LeadingZeroBitCount))
-	values.Set(createdAtKey, model.CreatedAt)
-	values.Set(ttlKey, model.TTL)
-	values.Set(resourceKey, model.Resource)
-	values.Set(payloadKey, model.Payload)
-	values.Set(hashNameKey, model.HashName)
-	values.Set(hashDataLayoutKey, model.HashDataLayout)
+	values.Set(LeadingZeroBitCountKey, strconv.Itoa(model.LeadingZeroBitCount))
+	values.Set(CreatedAtKey, model.CreatedAt)
+	values.Set(TTLKey, model.TTL)
+	values.Set(ResourceKey, model.Resource)
+	values.Set(PayloadKey, model.Payload)
+	values.Set(HashNameKey, model.HashName)
+	values.Set(HashDataLayoutKey, model.HashDataLayout)
 
 	return values
 }
