@@ -203,8 +203,8 @@ func (usecase ServerDoSProtectorUsecase) GenerateSignedChallenge(
 	}
 
 	signedChallenge := dosProtectorUsecaseModels.SignedChallenge{
-		Challenge:                 challenge,
-		MessageAuthenticationCode: hex.EncodeToString(signature.ToBytes()),
+		Challenge: challenge,
+		Signature: hex.EncodeToString(signature.ToBytes()),
 	}
 	return signedChallenge, nil
 }
@@ -358,7 +358,7 @@ func (usecase ServerDoSProtectorUsecase) VerifySolutionAndChallengeSignature(
 		return pow.Solution{}, fmt.Errorf("unable to sign the challenge: %w", err)
 	}
 
-	signature, err := hex.DecodeString(params.MessageAuthenticationCode)
+	signature, err := hex.DecodeString(params.Signature)
 	if err != nil {
 		return pow.Solution{}, fmt.Errorf(
 			"unable to parse the signature: %w",

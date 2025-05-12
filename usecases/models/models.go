@@ -21,7 +21,7 @@ type SolveChallengeParams struct {
 type SignedChallenge struct {
 	pow.Challenge
 
-	MessageAuthenticationCode string
+	Signature string
 }
 
 type VerifySolutionParams struct {
@@ -39,5 +39,5 @@ type VerifySolutionParams struct {
 type VerifySolutionAndChallengeSignatureParams struct {
 	VerifySolutionParams
 
-	MessageAuthenticationCode string
+	Signature string
 }

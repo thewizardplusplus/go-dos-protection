@@ -831,7 +831,7 @@ func TestServerDoSProtectorUsecase_GenerateSignedChallenge(test *testing.T) {
 
 				return dosProtectorUsecaseModels.SignedChallenge{
 					Challenge: challenge,
-					MessageAuthenticationCode: "ac163758d5bdd980" +
+					Signature: "ac163758d5bdd980" +
 						"c712c64b6cbcf0d6" +
 						"9e868b3f7da5dfda" +
 						"58703eee68cf1db5" +
@@ -1956,7 +1956,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 						Nonce:   "37",
 						HashSum: mo.None[string](),
 					},
-					MessageAuthenticationCode: "4b4f547d39c52803" +
+					Signature: "4b4f547d39c52803" +
 						"44cac19f32732a5c" +
 						"677a1f21763eaedd" +
 						"0e21e93934999186" +
@@ -2048,7 +2048,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 						Nonce:   "37",
 						HashSum: mo.None[string](),
 					},
-					MessageAuthenticationCode: "4b4f547d39c52803" +
+					Signature: "4b4f547d39c52803" +
 						"44cac19f32732a5c" +
 						"677a1f21763eaedd" +
 						"0e21e93934999186" +
@@ -2094,7 +2094,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 						Nonce:   "37",
 						HashSum: mo.None[string](),
 					},
-					MessageAuthenticationCode: "4b4f547d39c52803" +
+					Signature: "4b4f547d39c52803" +
 						"44cac19f32732a5c" +
 						"677a1f21763eaedd" +
 						"0e21e93934999186" +
@@ -2156,7 +2156,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 						Nonce:   "37",
 						HashSum: mo.None[string](),
 					},
-					MessageAuthenticationCode: "4b4f547d39c52803" +
+					Signature: "4b4f547d39c52803" +
 						"44cac19f32732a5c" +
 						"677a1f21763eaedd" +
 						"0e21e93934999186" +
@@ -2220,7 +2220,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 						Nonce:   "37",
 						HashSum: mo.None[string](),
 					},
-					MessageAuthenticationCode: "4b4f547d39c52803" +
+					Signature: "4b4f547d39c52803" +
 						"44cac19f32732a5c" +
 						"677a1f21763eaedd" +
 						"0e21e93934999186" +
@@ -2282,7 +2282,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 						Nonce:   "37",
 						HashSum: mo.None[string](),
 					},
-					MessageAuthenticationCode: "invalid",
+					Signature: "invalid",
 				},
 			},
 			want: pow.Solution{},
@@ -2340,7 +2340,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 						Nonce:   "37",
 						HashSum: mo.None[string](),
 					},
-					MessageAuthenticationCode: "4b4f547d39c52803" +
+					Signature: "4b4f547d39c52803" +
 						"44cac19f32732a5c" +
 						"677a1f21763eaedd" +
 						"0e21e93934999186" +
