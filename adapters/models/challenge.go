@@ -28,6 +28,12 @@ type Challenge struct {
 	HashDataLayout      string
 }
 
+type SignedChallenge struct {
+	Challenge
+
+	Signature string
+}
+
 func NewChallengeFromEntity(entity pow.Challenge) (Challenge, error) {
 	createdAt, isPresent := entity.CreatedAt().Get()
 	if !isPresent {
