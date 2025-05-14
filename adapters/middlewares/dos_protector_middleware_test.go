@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	dosProtectorAdapterModels "github.com/thewizardplusplus/go-dos-protector/adapters/models"
 	dosProtectorAdapterMiddlewaresMocks "github.com/thewizardplusplus/go-dos-protector/mocks/github.com/thewizardplusplus/go-dos-protector/adapters/middlewares"
 	dosProtectorUsecases "github.com/thewizardplusplus/go-dos-protector/usecases"
 	dosProtectorUsecaseErrors "github.com/thewizardplusplus/go-dos-protector/usecases/errors"
@@ -176,7 +177,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 				ProtoMajor: 1,
 				ProtoMinor: 1,
 				Header: http.Header{
-					ChallengeHeaderKey: {
+					dosProtectorAdapterModels.ChallengeHeaderKey: {
 						"created-at=2000-01-02T03%3A04%3A05.000000006Z" +
 							"&hash-data-layout=" +
 							"%7B%7B.Challenge.LeadingZeroBitCount.ToInt%7D%7D" +
@@ -188,7 +189,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 							"&resource=https%3A%2F%2Fexample.com%2F" +
 							"&ttl=" + (100 * 365 * 24 * time.Hour).String(),
 					},
-					SignatureHeaderKey: {
+					dosProtectorAdapterModels.SignatureHeaderKey: {
 						"dummy",
 					},
 				},
@@ -251,7 +252,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 				request: func() *http.Request {
 					request := httptest.NewRequest(http.MethodGet, "https://example.com/", nil)
 					request.Header.Set(
-						SolutionHeaderKey,
+						dosProtectorAdapterModels.SolutionHeaderKey,
 						"created-at=2000-01-02T03%3A04%3A05.000000006Z"+
 							"&hash-data-layout="+
 							"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D"+
@@ -269,7 +270,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 							"&resource=https%3A%2F%2Fexample.com%2F"+
 							"&ttl="+(100*365*24*time.Hour).String(),
 					)
-					request.Header.Set(SignatureHeaderKey, "dummy")
+					request.Header.Set(dosProtectorAdapterModels.SignatureHeaderKey, "dummy")
 
 					return request
 				}(),
@@ -409,7 +410,10 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 			handlerArgs: handlerArgs{
 				request: func() *http.Request {
 					request := httptest.NewRequest(http.MethodGet, "https://example.com/", nil)
-					request.Header.Set(SolutionHeaderKey, "leading-zero-bit-count=invalid")
+					request.Header.Set(
+						dosProtectorAdapterModels.SolutionHeaderKey,
+						"leading-zero-bit-count=invalid",
+					)
 
 					return request
 				}(),
@@ -447,7 +451,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 				request: func() *http.Request {
 					request := httptest.NewRequest(http.MethodGet, "https://example.com/", nil)
 					request.Header.Set(
-						SolutionHeaderKey,
+						dosProtectorAdapterModels.SolutionHeaderKey,
 						"created-at=2000-01-02T03%3A04%3A05.000000006Z"+
 							"&hash-data-layout="+
 							"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D"+
@@ -532,7 +536,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 				request: func() *http.Request {
 					request := httptest.NewRequest(http.MethodGet, "https://example.com/", nil)
 					request.Header.Set(
-						SolutionHeaderKey,
+						dosProtectorAdapterModels.SolutionHeaderKey,
 						"created-at=2000-01-02T03%3A04%3A05.000000006Z"+
 							"&hash-data-layout="+
 							"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D"+
@@ -550,7 +554,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 							"&resource=https%3A%2F%2Fexample.com%2F"+
 							"&ttl="+(100*365*24*time.Hour).String(),
 					)
-					request.Header.Set(SignatureHeaderKey, "dummy")
+					request.Header.Set(dosProtectorAdapterModels.SignatureHeaderKey, "dummy")
 
 					return request
 				}(),
@@ -618,7 +622,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 				request: func() *http.Request {
 					request := httptest.NewRequest(http.MethodGet, "https://example.com/", nil)
 					request.Header.Set(
-						SolutionHeaderKey,
+						dosProtectorAdapterModels.SolutionHeaderKey,
 						"created-at=2000-01-02T03%3A04%3A05.000000006Z"+
 							"&hash-data-layout="+
 							"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D"+
@@ -636,7 +640,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 							"&resource=https%3A%2F%2Fexample.com%2F"+
 							"&ttl="+(100*365*24*time.Hour).String(),
 					)
-					request.Header.Set(SignatureHeaderKey, "dummy")
+					request.Header.Set(dosProtectorAdapterModels.SignatureHeaderKey, "dummy")
 
 					return request
 				}(),
@@ -704,7 +708,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 				request: func() *http.Request {
 					request := httptest.NewRequest(http.MethodGet, "https://example.com/", nil)
 					request.Header.Set(
-						SolutionHeaderKey,
+						dosProtectorAdapterModels.SolutionHeaderKey,
 						"created-at=2000-01-02T03%3A04%3A05.000000006Z"+
 							"&hash-data-layout="+
 							"%7B%7B+.Challenge.LeadingZeroBitCount.ToInt+%7D%7D"+
@@ -722,7 +726,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 							"&resource=https%3A%2F%2Fexample.com%2F"+
 							"&ttl="+(100*365*24*time.Hour).String(),
 					)
-					request.Header.Set(SignatureHeaderKey, "dummy")
+					request.Header.Set(dosProtectorAdapterModels.SignatureHeaderKey, "dummy")
 
 					return request
 				}(),

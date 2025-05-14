@@ -13,12 +13,6 @@ import (
 	pow "github.com/thewizardplusplus/go-pow"
 )
 
-const (
-	ChallengeHeaderKey = "X-Dos-Protector-Challenge"
-	SolutionHeaderKey  = "X-Dos-Protector-Solution"
-	SignatureHeaderKey = "X-Dos-Protector-Signature"
-)
-
 type DoSProtectorUsecase interface {
 	GenerateSignedChallenge(
 		ctx context.Context,
@@ -68,7 +62,8 @@ func (middleware DoSProtectorMiddleware) ApplyTo(
 			middleware.options.HTTPErrorHandler(writer, err.Error(), statusCode)
 		}
 
-		solutionHeader := request.Header.Get(SolutionHeaderKey)
+		solutionHeader :=
+			request.Header.Get(dosProtectorAdapterModels.SolutionHeaderKey)
 		if solutionHeader == "" {
 			signedChallenge, err := dosProtectorUsecase.GenerateSignedChallenge(ctx)
 			if err != nil {
@@ -83,8 +78,14 @@ func (middleware DoSProtectorMiddleware) ApplyTo(
 				return
 			}
 
-			writer.Header().Set(ChallengeHeaderKey, challengeModel.ToQuery())
-			writer.Header().Set(SignatureHeaderKey, signedChallenge.Signature)
+			writer.Header().Set(
+				dosProtectorAdapterModels.ChallengeHeaderKey,
+				challengeModel.ToQuery(),
+			)
+			writer.Header().Set(
+				dosProtectorAdapterModels.SignatureHeaderKey,
+				signedChallenge.Signature,
+			)
 			writer.WriteHeader(http.StatusForbidden)
 
 			return
@@ -101,11 +102,12 @@ func (middleware DoSProtectorMiddleware) ApplyTo(
 			return
 		}
 
-		signatureHeader := request.Header.Get(SignatureHeaderKey)
+		signatureHeader :=
+			request.Header.Get(dosProtectorAdapterModels.SignatureHeaderKey)
 		if signatureHeader == "" {
 			handleErrorf(
 				"`%s` header is required: %w",
-				SignatureHeaderKey,
+				dosProtectorAdapterModels.SignatureHeaderKey,
 				dosProtectorUsecaseErrors.ErrInvalidParameters,
 			)
 
