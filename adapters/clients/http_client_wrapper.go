@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/samber/mo"
 	dosProtectorAdapterModels "github.com/thewizardplusplus/go-dos-protector/adapters/models"
+	dosProtectorUsecaseModels "github.com/thewizardplusplus/go-dos-protector/usecases/models"
+	pow "github.com/thewizardplusplus/go-pow"
+	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
 )
 
 const (
@@ -16,8 +20,18 @@ type HTTPClient interface {
 	Do(request *http.Request) (*http.Response, error)
 }
 
+type DoSProtectorUsecase interface {
+	SolveChallenge(
+		ctx context.Context,
+		params dosProtectorUsecaseModels.SolveChallengeParams,
+	) (pow.Solution, error)
+}
+
 type HTTPClientWrapperOptions struct {
-	HTTPClient HTTPClient
+	HTTPClient               HTTPClient
+	DoSProtectorUsecase      DoSProtectorUsecase
+	MaxAttemptCount          mo.Option[int]
+	RandomInitialNonceParams mo.Option[powValueTypes.RandomNonceParams]
 }
 
 type HTTPClientWrapper struct {
@@ -28,6 +42,58 @@ func NewHTTPClientWrapper(options HTTPClientWrapperOptions) HTTPClientWrapper {
 	return HTTPClientWrapper{
 		options: options,
 	}
+}
+
+func (wrapper HTTPClientWrapper) Do(
+	request *http.Request,
+) (*http.Response, error) {
+	ctx := request.Context()
+
+	signedChallengeModel, err :=
+		wrapper.requestChallenge(ctx, request.URL.String())
+	if err != nil {
+		return nil, fmt.Errorf("unable to request a new challenge: %w", err)
+	}
+
+	solution, err := wrapper.options.DoSProtectorUsecase.SolveChallenge(
+		ctx,
+		dosProtectorUsecaseModels.SolveChallengeParams{
+			LeadingZeroBitCount:      signedChallengeModel.LeadingZeroBitCount,
+			CreatedAt:                signedChallengeModel.CreatedAt,
+			TTL:                      signedChallengeModel.TTL,
+			Resource:                 signedChallengeModel.Resource,
+			Payload:                  signedChallengeModel.Payload,
+			HashName:                 signedChallengeModel.HashName,
+			HashDataLayout:           signedChallengeModel.HashDataLayout,
+			MaxAttemptCount:          wrapper.options.MaxAttemptCount,
+			RandomInitialNonceParams: wrapper.options.RandomInitialNonceParams,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to solve the challenge: %w", err)
+	}
+
+	solutionModel, err := dosProtectorAdapterModels.NewSolutionFromEntity(solution)
+	if err != nil {
+		return nil, fmt.Errorf("unable to construct the solution model: %w", err)
+	}
+
+	copiedRequest := request.Clone(ctx)
+	copiedRequest.Header.Set(
+		dosProtectorAdapterModels.SolutionHeaderKey,
+		solutionModel.ToQuery(),
+	)
+	copiedRequest.Header.Set(
+		dosProtectorAdapterModels.SignatureHeaderKey,
+		signedChallengeModel.Signature,
+	)
+
+	response, err := wrapper.options.HTTPClient.Do(copiedRequest)
+	if err != nil {
+		return nil, fmt.Errorf("unable to send the main request: %w", err)
+	}
+
+	return response, nil
 }
 
 func (wrapper HTTPClientWrapper) requestChallenge(
