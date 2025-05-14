@@ -42,14 +42,17 @@ func NewSolutionFromEntity(entity pow.Solution) (Solution, error) {
 }
 
 func ParseSolutionFromQuery(query string) (Solution, error) {
-	challenge, err := ParseChallengeFromQuery(query)
-	if err != nil {
-		return Solution{}, fmt.Errorf("unable to parse the challenge: %w", err)
-	}
-
 	values, err := url.ParseQuery(query)
 	if err != nil {
 		return Solution{}, fmt.Errorf("unable to parse the query: %w", err)
+	}
+
+	challenge, err := newChallengeFromValues(values)
+	if err != nil {
+		return Solution{}, fmt.Errorf(
+			"unable to construct the challenge from the values: %w",
+			err,
+		)
 	}
 
 	model := Solution{

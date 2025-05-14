@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strconv"
 
 	pow "github.com/thewizardplusplus/go-pow"
 )
@@ -63,23 +62,14 @@ func ParseChallengeFromQuery(query string) (Challenge, error) {
 		return Challenge{}, fmt.Errorf("unable to parse the query: %w", err)
 	}
 
-	leadingZeroBitCount, err := strconv.Atoi(values.Get(LeadingZeroBitCountKey))
+	model, err := newChallengeFromValues(values)
 	if err != nil {
 		return Challenge{}, fmt.Errorf(
-			"unable to parse the leading zero bit count: %w",
+			"unable to construct the challenge from the values: %w",
 			err,
 		)
 	}
 
-	model := Challenge{
-		LeadingZeroBitCount: leadingZeroBitCount,
-		CreatedAt:           values.Get(CreatedAtKey),
-		TTL:                 values.Get(TTLKey),
-		Resource:            values.Get(ResourceKey),
-		Payload:             values.Get(PayloadKey),
-		HashName:            values.Get(HashNameKey),
-		HashDataLayout:      values.Get(HashDataLayoutKey),
-	}
 	return model, nil
 }
 

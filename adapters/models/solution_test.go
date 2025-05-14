@@ -316,7 +316,15 @@ func TestParseSolutionFromQuery(test *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "error/unable to parse the challenge",
+			name: "error/unable to parse the query",
+			args: args{
+				query: "%",
+			},
+			want:    Solution{},
+			wantErr: assert.Error,
+		},
+		{
+			name: "error/unable to construct the challenge from the values",
 			args: args{
 				query: "leading-zero-bit-count=invalid",
 			},

@@ -204,7 +204,7 @@ func TestParseChallengeFromQuery(test *testing.T) {
 			wantErr: assert.Error,
 		},
 		{
-			name: "error/unable to parse the leading zero bit count",
+			name: "error/unable to construct the challenge from the values",
 			args: args{
 				query: "leading-zero-bit-count=invalid",
 			},
