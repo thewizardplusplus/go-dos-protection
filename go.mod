@@ -3,6 +3,7 @@ module github.com/thewizardplusplus/go-dos-protector
 go 1.23
 
 require (
+	github.com/AlekSi/pointer v1.2.0
 	github.com/samber/mo v1.13.0
 	github.com/stretchr/testify v1.10.0
 	github.com/thewizardplusplus/go-pow v1.0.0
