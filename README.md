@@ -47,6 +47,182 @@ A library implementing [denial-of-service attack (DoS attack)](https://en.wikipe
 $ go get github.com/thewizardplusplus/go-dos-protector
 ```
 
+## Examples
+
+With the constant providers:
+
+```go
+package main
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/sha512"
+	"fmt"
+	"io"
+	"log"
+	"math/big"
+	"net/http"
+	"net/http/httptest"
+	"time"
+
+	"github.com/samber/mo"
+	dosProtectorAdapterClients "github.com/thewizardplusplus/go-dos-protector/adapters/clients"
+	dosProtectorAdapterMiddlewares "github.com/thewizardplusplus/go-dos-protector/adapters/middlewares"
+	dosProtectorUsecases "github.com/thewizardplusplus/go-dos-protector/usecases"
+	dosProtectorUsecaseProviders "github.com/thewizardplusplus/go-dos-protector/usecases/providers"
+	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
+)
+
+func newExampleHashProvider() dosProtectorUsecases.HashProvider {
+	hashProvider := dosProtectorUsecaseProviders.NewMapHashProvider()
+	hashProvider.RegisterHash("SHA-256", sha256.New)
+	hashProvider.RegisterHash("SHA-512", sha512.New)
+
+	return hashProvider
+}
+
+func newExampleHTTPClient(
+	hashProvider dosProtectorUsecases.HashProvider,
+) dosProtectorAdapterClients.HTTPClientWrapper {
+	return dosProtectorAdapterClients.NewHTTPClientWrapper(
+		dosProtectorAdapterClients.HTTPClientWrapperOptions{
+			HTTPClient: http.DefaultClient,
+			DoSProtectorUsecase: dosProtectorUsecases.NewClientDoSProtectorUsecase(
+				dosProtectorUsecases.ClientDoSProtectorUsecaseOptions{
+					HashProvider: hashProvider,
+				},
+			),
+			MaxAttemptCount: mo.Some(1000),
+			RandomInitialNonceParams: mo.Some(powValueTypes.RandomNonceParams{
+				RandomReader: rand.Reader,
+				MinRawValue:  big.NewInt(1023),
+				MaxRawValue:  big.NewInt(1042),
+			}),
+		},
+	)
+}
+
+type middleware func(handler http.Handler) http.Handler
+
+type newExampleServerParams struct {
+	leadingZeroBitCountProvider   dosProtectorUsecases.LeadingZeroBitCountProvider
+	resourceProvider              dosProtectorUsecases.ResourceProvider
+	mainSerializedPayloadProvider dosProtectorUsecases.SerializedPayloadProvider
+	hashProvider                  dosProtectorUsecases.HashProvider
+	handler                       http.Handler
+	middlewares                   []middleware
+}
+
+func newExampleServer(params newExampleServerParams) (*httptest.Server, error) {
+	ttl, err := powValueTypes.NewTTL(10 * time.Minute)
+	if err != nil {
+		return nil, fmt.Errorf("unable to construct the TTL: %w", err)
+	}
+
+	dosProtectorMiddleware :=
+		dosProtectorAdapterMiddlewares.NewDoSProtectorMiddleware(
+			dosProtectorAdapterMiddlewares.DoSProtectorMiddlewareOptions{
+				DoSProtectorUsecase: dosProtectorUsecases.NewServerDoSProtectorUsecase(
+					dosProtectorUsecases.ServerDoSProtectorUsecaseOptions{
+						LeadingZeroBitCountProvider:   params.leadingZeroBitCountProvider,
+						CreatedAtModulus:              ttl.ToDuration(),
+						TTL:                           ttl,
+						ResourceProvider:              params.resourceProvider,
+						MainSerializedPayloadProvider: params.mainSerializedPayloadProvider,
+						RandomPayloadByteReader:       rand.Reader,
+						RandomPayloadByteCount:        128,
+						HashProvider:                  params.hashProvider,
+						GenerationHashName:            "SHA-256",
+						SecretKey:                     "secret-key",
+						SigningHashName:               "SHA-512",
+					},
+				),
+				HTTPErrorHandler: http.Error,
+			},
+		)
+
+	middlewares := make([]middleware, 0, len(params.middlewares)+1)
+	middlewares = append(middlewares, dosProtectorMiddleware.ApplyTo)
+	middlewares = append(middlewares, params.middlewares...)
+
+	handler := params.handler
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+
+	return httptest.NewServer(handler), nil
+}
+
+func main() {
+	hashProvider := newExampleHashProvider()
+
+	leadingZeroBitCount, err := powValueTypes.NewLeadingZeroBitCount(5)
+	if err != nil {
+		log.Fatalf("unable to construct the leading zero bit count: %s", err)
+	}
+
+	resource, err := powValueTypes.ParseResource("https://example.com/")
+	if err != nil {
+		log.Fatalf("unable to construct the resource: %s", err)
+	}
+
+	var mux http.ServeMux
+	mux.Handle("GET /api/v1/echo", http.HandlerFunc(func(
+		writer http.ResponseWriter,
+		request *http.Request,
+	) {
+		writer.Write([]byte("Hello, World!\n")) //nolint:errcheck
+	}))
+
+	leadingZeroBitCountProvider :=
+		dosProtectorUsecaseProviders.NewConstantLeadingZeroBitCount(
+			leadingZeroBitCount,
+		)
+	resourceProvider := dosProtectorUsecaseProviders.NewConstantResource(resource)
+	mainSerializedPayloadProvider :=
+		dosProtectorUsecaseProviders.NewConstantSerializedPayload(
+			powValueTypes.NewSerializedPayload("dummy"),
+		)
+	server, err := newExampleServer(newExampleServerParams{
+		leadingZeroBitCountProvider:   leadingZeroBitCountProvider,
+		resourceProvider:              resourceProvider,
+		mainSerializedPayloadProvider: mainSerializedPayloadProvider,
+		hashProvider:                  hashProvider,
+		handler:                       &mux,
+		middlewares:                   []middleware{},
+	})
+	if err != nil {
+		log.Fatalf("unable to construct the example server: %s", err)
+	}
+	defer server.Close()
+
+	request, err := http.NewRequest(http.MethodGet, server.URL+"/api/v1/echo", nil)
+	if err != nil {
+		log.Fatalf("unable to construct the request: %s", err)
+	}
+
+	httpClient := newExampleHTTPClient(hashProvider)
+	response, err := httpClient.Do(request)
+	if err != nil {
+		log.Fatalf("unable to send the request: %s", err)
+	}
+	defer response.Body.Close()
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Fatalf("unable to read the response body: %s", err)
+	}
+
+	fmt.Println(response.Status)
+	fmt.Print(string(responseBody))
+
+	// Output:
+	// 200 OK
+	// Hello, World!
+}
+```
+
 ## License
 
 The MIT License (MIT)
