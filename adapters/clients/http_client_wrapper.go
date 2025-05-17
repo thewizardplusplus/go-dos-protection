@@ -12,10 +12,6 @@ import (
 	powValueTypes "github.com/thewizardplusplus/go-pow/value-types"
 )
 
-const (
-	ExpectedResponseStatusToHEADRequest = http.StatusForbidden
-)
-
 type HTTPClient interface {
 	Do(request *http.Request) (*http.Response, error)
 }
@@ -115,11 +111,11 @@ func (wrapper HTTPClientWrapper) requestChallenge(
 			err,
 		)
 	}
-	if response.StatusCode != ExpectedResponseStatusToHEADRequest {
+	if response.StatusCode != dosProtectorAdapterModels.ResponseStatusToHEADRequest { //nolint:lll
 		return dosProtectorAdapterModels.SignedChallenge{}, fmt.Errorf(
 			"unexpected status of the response to the HEAD request: %d (should be %d)",
 			response.StatusCode,
-			ExpectedResponseStatusToHEADRequest,
+			dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 		)
 	}
 
