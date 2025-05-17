@@ -11,7 +11,9 @@ A library implementing [denial-of-service attack (DoS attack)](https://en.wikipe
 ## Features
 
 - use of patterns:
-  - implementation based on [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) principles with separate use case layers for server and client;
+  - implementation based on [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) principles:
+    - separate use case layers for server and client;
+    - adapter layer for integrating with HTTP servers and clients;
   - input parsing and validation handled internally in the use cases (inputs are passed as raw DTOs);
   - relies on the library [`github.com/thewizardplusplus/go-pow`](https://github.com/thewizardplusplus/go-pow) for [PoW](https://en.wikipedia.org/wiki/Proof_of_work) algorithm implementation;
 - use cases:
@@ -30,16 +32,51 @@ A library implementing [denial-of-service attack (DoS attack)](https://en.wikipe
     - `VerifySolutionAndChallengeSignature()`: verify both [PoW](https://en.wikipedia.org/wiki/Proof_of_work) solution and challenge [MAC](https://en.wikipedia.org/wiki/Message_authentication_code) signature;
   - **client-side:**
     - `SolveChallenge()`: solve a challenge using the [PoW](https://en.wikipedia.org/wiki/Proof_of_work) algorithm;
-- providers:
-  - extensible provider interfaces for:
-    - hash difficulty;
-    - target resource [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier);
-    - static payload part;
-  - built-in provider implementations:
-    - constant value providers;
-    - dynamic providers:
-      - hash difficulty based on current server load (active request count);
-      - target resource [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier) and static payload extracted from a [context](https://pkg.go.dev/context@go1.23.0#Context).
+  - **providers:**
+    - extensible provider interfaces for:
+      - hash difficulty;
+      - target resource [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier);
+      - static payload part;
+    - built-in provider implementations:
+      - constant value providers;
+      - dynamic providers:
+        - hash difficulty based on current server load (active request count);
+        - target resource [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier) and static payload extracted from a [context](https://pkg.go.dev/context@go1.23.0#Context);
+- adapter layer:
+  - **middlewares:**
+    - `LoadLevelMiddleware`: tracks the current server load by counting in-flight requests:
+      - intended to be used in conjunction with the dynamic hash difficulty provider (see above);
+      - interacts with the latter via an interface;
+    - `ResourceMiddleware`: sets the request URL as the protected resource in the request [context](https://pkg.go.dev/context@go1.23.0#Context):
+      - optionally enriches the URL with a host:
+        - host can be taken from the request itself;
+        - host can be taken from proxy-provided headers;
+    - `DoSProtectorMiddleware`: implements the core logic of [DoS attack](https://en.wikipedia.org/wiki/Denial-of-service_attack) protection using the [PoW](https://en.wikipedia.org/wiki/Proof_of_work) algorithm:
+      - if a request lacks the solution header `X-Dos-Protector-Solution`, it generates a new challenge, signs it, and returns it via the response headers `X-Dos-Protector-Challenge` and `X-Dos-Protector-Signature`;
+      - if a request includes the solution header `X-Dos-Protector-Solution`, it parses and validates the solution:
+        - if validation fails, the `403 Forbidden` error response is returned;
+        - if validation succeeds, the request proceeds to the protected handler;
+      - all operations are delegated to the corresponding use case via an interface;
+  - **models:**
+    - introduced adapter-layer models:
+      - `Challenge`: corresponds to the domain-level challenge entity;
+      - `Solution`: corresponds to the domain-level solution entity;
+    - functions:
+      - `NewChallengeFromEntity()` and `NewSolutionFromEntity()`: convert domain entities into adapter-layer models;
+      - `ParseChallengeFromQuery()` and `ParseSolutionFromQuery()`: parse adapter-layer models from URL-encoded query strings;
+    - methods:
+      - `Challenge.ToQuery()` and `Solution.ToQuery()`: serialize adapter-layer models into URL-encoded query strings;
+  - **errors:**
+    - `TransformErrorToStatusCode()` maps internal errors to appropriate HTTP status codes:
+      - internal error `dosProtectorUsecaseErrors.ErrInvalidParameters` corresponds to the HTTP status code `400 Bad Request`;
+      - internal error `powErrors.ErrValidationFailure` corresponds to the HTTP status code `403 Forbidden`;
+      - other errors correspond to the HTTP status code `500 Internal Server Error`;
+  - **clients:**
+    - `HTTPClientWrapper`: a wrapper around the standard [HTTP client](https://pkg.go.dev/net/http@go1.23.0#Client) (via an interface) that automates interaction with `DoSProtectorMiddleware` (see above):
+      - sends an initial `HEAD` request to the target URL to retrieve the challenge and signature from the `X-Dos-Protector-Challenge` and `X-Dos-Protector-Signature` headers, respectively;
+      - parses and solves the challenge by invoking the corresponding use case via an interface;
+      - clones the original request and enriches it with the computed solution and signature in the headers `X-Dos-Protector-Solution` and `X-Dos-Protector-Signature`;
+      - sends the enriched request to the server as usual.
 
 ## Installation
 
