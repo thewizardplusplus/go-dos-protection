@@ -10,7 +10,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
-	"time"
 
 	"github.com/AlekSi/pointer"
 	"github.com/stretchr/testify/assert"
@@ -176,7 +175,7 @@ func TestDoSProtector_integration(test *testing.T) {
 									"&nonce=1036" +
 									"&payload=dummyd9877ece6d" +
 									"&resource=https%3A%2F%2Fexample.com%2F" +
-									"&ttl=" + (100 * 365 * 24 * time.Hour).String(),
+									"&ttl=876000h0m0s",
 							},
 							dosProtectorAdapterModels.SignatureHeaderKey: {
 								"4dfa83403660a20b" +
@@ -326,7 +325,7 @@ func TestDoSProtector_integration(test *testing.T) {
 									"&nonce=1033" +
 									"&payload=Go-http-client%2F1.1d9877ece6d" +
 									"&resource=%2Fapi%2Fv1%2Fecho" +
-									"&ttl=" + (100 * 365 * 24 * time.Hour).String(),
+									"&ttl=876000h0m0s",
 							},
 							dosProtectorAdapterModels.SignatureHeaderKey: {
 								"87ec3cf29b0c1d0e" +

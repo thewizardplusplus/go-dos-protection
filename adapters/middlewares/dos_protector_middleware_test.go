@@ -187,7 +187,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 							"&leading-zero-bit-count=5" +
 							"&payload=dummy" +
 							"&resource=https%3A%2F%2Fexample.com%2F" +
-							"&ttl=" + (100 * 365 * 24 * time.Hour).String(),
+							"&ttl=876000h0m0s",
 					},
 					dosProtectorAdapterModels.SignatureHeaderKey: {
 						"dummy",
@@ -210,7 +210,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 								VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 									LeadingZeroBitCount: 5,
 									CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-									TTL:                 (100 * 365 * 24 * time.Hour).String(),
+									TTL:                 "876000h0m0s",
 									Resource:            "https://example.com/",
 									Payload:             "dummy",
 									HashName:            "SHA-256",
@@ -491,7 +491,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 								VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 									LeadingZeroBitCount: 5,
 									CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-									TTL:                 (100 * 365 * 24 * time.Hour).String(),
+									TTL:                 "876000h0m0s",
 									Resource:            "https://example.com/",
 									Payload:             "dummy",
 									HashName:            "SHA-256",
@@ -577,7 +577,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 								VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 									LeadingZeroBitCount: 5,
 									CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-									TTL:                 (100 * 365 * 24 * time.Hour).String(),
+									TTL:                 "876000h0m0s",
 									Resource:            "https://example.com/",
 									Payload:             "dummy",
 									HashName:            "SHA-256",
@@ -663,7 +663,7 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 								VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 									LeadingZeroBitCount: 5,
 									CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-									TTL:                 (100 * 365 * 24 * time.Hour).String(),
+									TTL:                 "876000h0m0s",
 									Resource:            "https://example.com/",
 									Payload:             "dummy",
 									HashName:            "SHA-256",

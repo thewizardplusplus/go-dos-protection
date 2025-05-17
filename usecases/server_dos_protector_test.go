@@ -1091,7 +1091,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1193,7 +1193,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1268,7 +1268,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: -23,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1302,7 +1302,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "invalid",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1374,7 +1374,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1416,7 +1416,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            ":",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1461,7 +1461,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/one",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1510,7 +1510,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1557,7 +1557,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1605,7 +1605,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 1000,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1704,7 +1704,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1754,7 +1754,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1804,7 +1804,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 5,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1857,7 +1857,7 @@ func TestServerDoSProtectorUsecase_VerifySolution(test *testing.T) {
 				params: dosProtectorUsecaseModels.VerifySolutionParams{
 					LeadingZeroBitCount: 23,
 					CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-					TTL:                 (100 * 365 * 24 * time.Hour).String(),
+					TTL:                 "876000h0m0s",
 					Resource:            "https://example.com/",
 					Payload:             "dummy",
 					HashName:            "SHA-256",
@@ -1946,7 +1946,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-						TTL:                 (100 * 365 * 24 * time.Hour).String(),
+						TTL:                 "876000h0m0s",
 						Resource:            "https://example.com/",
 						Payload:             "dummy",
 						HashName:            "SHA-256",
@@ -2038,7 +2038,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-						TTL:                 (100 * 365 * 24 * time.Hour).String(),
+						TTL:                 "876000h0m0s",
 						Resource:            "https://example.com/",
 						Payload:             "dummy",
 						HashName:            "SHA-256",
@@ -2084,7 +2084,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: -23,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-						TTL:                 (100 * 365 * 24 * time.Hour).String(),
+						TTL:                 "876000h0m0s",
 						Resource:            "https://example.com/",
 						Payload:             "dummy",
 						HashName:            "SHA-256",
@@ -2146,7 +2146,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 23,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-						TTL:                 (100 * 365 * 24 * time.Hour).String(),
+						TTL:                 "876000h0m0s",
 						Resource:            "https://example.com/",
 						Payload:             "dummy",
 						HashName:            "SHA-256",
@@ -2210,7 +2210,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-						TTL:                 (100 * 365 * 24 * time.Hour).String(),
+						TTL:                 "876000h0m0s",
 						Resource:            "https://example.com/",
 						Payload:             "dummy",
 						HashName:            "SHA-256",
@@ -2272,7 +2272,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-						TTL:                 (100 * 365 * 24 * time.Hour).String(),
+						TTL:                 "876000h0m0s",
 						Resource:            "https://example.com/",
 						Payload:             "dummy",
 						HashName:            "SHA-256",
@@ -2330,7 +2330,7 @@ func TestServerDoSProtectorUsecase_VerifySolutionAndChallengeSignature(test *tes
 					VerifySolutionParams: dosProtectorUsecaseModels.VerifySolutionParams{
 						LeadingZeroBitCount: 5,
 						CreatedAt:           "2000-01-02T03:04:05.000000006Z",
-						TTL:                 (100 * 365 * 24 * time.Hour).String(),
+						TTL:                 "876000h0m0s",
 						Resource:            "https://example.com/",
 						Payload:             "dummy",
 						HashName:            "SHA-256",
