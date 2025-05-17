@@ -169,10 +169,10 @@ func TestDoSProtectorMiddleware_ApplyTo(test *testing.T) {
 			wantResponse: mo.Some(&http.Response{
 				Status: fmt.Sprintf(
 					"%d %s",
-					http.StatusForbidden,
-					http.StatusText(http.StatusForbidden),
+					dosProtectorAdapterModels.ResponseStatusToHEADRequest,
+					http.StatusText(dosProtectorAdapterModels.ResponseStatusToHEADRequest),
 				),
-				StatusCode: http.StatusForbidden,
+				StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 				Proto:      "HTTP/1.1",
 				ProtoMajor: 1,
 				ProtoMinor: 1,
