@@ -86,7 +86,7 @@ func (middleware DoSProtectorMiddleware) ApplyTo(
 				dosProtectorAdapterModels.SignatureHeaderKey,
 				signedChallenge.Signature,
 			)
-			writer.WriteHeader(http.StatusForbidden)
+			writer.WriteHeader(dosProtectorAdapterModels.ResponseStatusToHEADRequest)
 
 			return
 		}
