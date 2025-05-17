@@ -131,7 +131,7 @@ func TestHTTPClientWrapper_Do(test *testing.T) {
 						Do(headRequest).
 						Return(
 							&http.Response{
-								StatusCode: http.StatusForbidden,
+								StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 								Header: http.Header{
 									dosProtectorAdapterModels.ChallengeHeaderKey: {
 										"created-at=2000-01-02T03%3A04%3A05.000000006Z" +
@@ -301,7 +301,7 @@ func TestHTTPClientWrapper_Do(test *testing.T) {
 						Do(headRequest).
 						Return(
 							&http.Response{
-								StatusCode: http.StatusForbidden,
+								StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 								Header: http.Header{
 									dosProtectorAdapterModels.ChallengeHeaderKey: {
 										"created-at=2000-01-02T03%3A04%3A05.000000006Z" +
@@ -383,7 +383,7 @@ func TestHTTPClientWrapper_Do(test *testing.T) {
 						Do(headRequest).
 						Return(
 							&http.Response{
-								StatusCode: http.StatusForbidden,
+								StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 								Header: http.Header{
 									dosProtectorAdapterModels.ChallengeHeaderKey: {
 										"created-at=2000-01-02T03%3A04%3A05.000000006Z" +
@@ -529,7 +529,7 @@ func TestHTTPClientWrapper_Do(test *testing.T) {
 						Do(headRequest).
 						Return(
 							&http.Response{
-								StatusCode: http.StatusForbidden,
+								StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 								Header: http.Header{
 									dosProtectorAdapterModels.ChallengeHeaderKey: {
 										"created-at=2000-01-02T03%3A04%3A05.000000006Z" +
@@ -694,7 +694,7 @@ func TestHTTPClientWrapper_requestChallenge(test *testing.T) {
 						Do(request).
 						Return(
 							&http.Response{
-								StatusCode: http.StatusForbidden,
+								StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 								Header: http.Header{
 									dosProtectorAdapterModels.ChallengeHeaderKey: {
 										"created-at=2000-01-02T03%3A04%3A05.000000006Z" +
@@ -832,7 +832,12 @@ func TestHTTPClientWrapper_requestChallenge(test *testing.T) {
 					httpClientMock := dosProtectorAdapterClientsMocks.NewMockHTTPClient(test)
 					httpClientMock.EXPECT().
 						Do(request).
-						Return(&http.Response{StatusCode: http.StatusForbidden}, nil)
+						Return(
+							&http.Response{
+								StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
+							},
+							nil,
+						)
 
 					return HTTPClientWrapperOptions{
 						HTTPClient: httpClientMock,
@@ -863,7 +868,7 @@ func TestHTTPClientWrapper_requestChallenge(test *testing.T) {
 						Do(request).
 						Return(
 							&http.Response{
-								StatusCode: http.StatusForbidden,
+								StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 								Header: http.Header{
 									dosProtectorAdapterModels.ChallengeHeaderKey: {
 										"leading-zero-bit-count=invalid",
@@ -902,7 +907,7 @@ func TestHTTPClientWrapper_requestChallenge(test *testing.T) {
 						Do(request).
 						Return(
 							&http.Response{
-								StatusCode: http.StatusForbidden,
+								StatusCode: dosProtectorAdapterModels.ResponseStatusToHEADRequest,
 								Header: http.Header{
 									dosProtectorAdapterModels.ChallengeHeaderKey: {
 										"created-at=2000-01-02T03%3A04%3A05.000000006Z" +
