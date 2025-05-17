@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.1.1](https://github.com/thewizardplusplus/go-dos-protector/tree/v1.1.1) (2025-05-18)
+
+_The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)._
+
+> **Main change**: Unification of client and middleware logic through a shared HTTP response status constant.
+
+### Changed
+
+- Moved the `ExpectedResponseStatusToHEADRequest` constant to a shared location (the `dosProtectorAdapterModels` package) and renamed it to `ResponseStatusToHEADRequest` to clarify its purpose.
+- Updated the `DoSProtectorMiddleware.ApplyTo()` method to use the shared constant, ensuring consistency with client-side logic in `HTTPClientWrapper`.
+- Replaced hardcoded HTTP status codes in tests of both `DoSProtectorMiddleware` and `HTTPClientWrapper` with the shared constant to improve maintainability.
+
 ## [v1.1.0](https://github.com/thewizardplusplus/go-dos-protector/tree/v1.1.0) (2025-05-17)
 
 _The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)._
